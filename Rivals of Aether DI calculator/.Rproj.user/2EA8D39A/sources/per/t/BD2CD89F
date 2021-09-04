@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1630760853288.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "BD2CD89F",
+    "lastKnownWriteTime" : 1630770046,
+    "last_content_update" : 1630770046607,
+    "path" : "C:/Users/Claudio/Desktop/Rivals of Aether DI calculator/utils.R",
+    "project_path" : "utils.R",
+    "properties" : {
+        "cursorPosition" : "0,0",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
