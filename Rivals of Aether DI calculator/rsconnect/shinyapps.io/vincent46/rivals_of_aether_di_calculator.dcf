@@ -5,7 +5,7 @@ account: vincent46
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4592652
-bundleId: 5000101
+bundleId: 5002739
 url: https://vincent46.shinyapps.io/rivals_of_aether_di_calculator/
-when: 1630772213.54045
-lastSyncTime: 1630772213.54045
+when: 1630877346.3298
+lastSyncTime: 1630877346.3298

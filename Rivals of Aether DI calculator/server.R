@@ -1,73 +1,108 @@
 library(shiny)
 library(shinydashboard)
+library(shinyWidgets)
 library(plotly)
+library(data.table)
+library(stringr)
+library(openxlsx)
+library(glue)
+library(shinyXYpad)
 
-server = function(input, output) { 
+server = function(input, output) {
   output$image <- renderUI({
     tags$img(src = "zet_fair.png", width = '200px', height = '170px', style = 'text-align:middle;')
   })
   
-  add_quadratic <- function(p, x0, y0, v0, theta, t_max, g) {
-    t = 1:round(t_max)
-    x = x0 + v0*cos(theta)*t
-    y = y0 + v0*sin(theta)*t - (1/2)*g*t*t
+  stage_canvas <- draw_stage('The endless abyss')
+  
+  move <- reactive({
+    move <- data.table()
+    print(input$tabs)
+    if (grepl('jab$', input$tabs) | 
+        grepl('tilt$', input$tabs) | 
+        grepl('strong$', input$tabs) |
+        grepl('air$', input$tabs) | 
+        grepl('special$', input$tabs)) {
+      move <- get_move_data(paste0(input$char, '_', input$tabs))
+    }
+    return(move)
+  })
+  
+  angles <- reactive({
     
-    p <- p %>% add_trace(x = ~x,
-                         y = ~y,
-                         type = 'scatter',
-                         mode = 'markers')
-    p
-  }
+    angles = NULL
+    
+    if (move()[,.N] > 0) {
+      angles = (pi / 180) * (ifelse(move()[,Angle] == 361, 45, move()[,Angle]) + 
+                               c(-18, 
+                                 18 * (sin( (pi / 180) * (input$DI - ifelse(move()[,Angle] == 361, 45, move()[,Angle])))),
+                                 18))
+    }
+    return(angles)
+  })
   
-  canvas_w = 1200
-  canvas_h = 1000
+  p_traj_in_out <- reactive({
+    
+    p_traj_in_out <- stage_canvas
+    
+    if (move()[,.N] > 0) {
+      for (theta in angles()[c(1,3)]) {
+        p_traj_in_out <- p_traj_in_out %>% 
+          add_quadratic(x0 = canvas_w / 2 + input$xy[['x']] * canvas_w / 2,
+                        y0 = canvas_h / 2 + input$xy[['y']] * canvas_h / 2,
+                        v0 = scaling_factor * (move()$Base.Knockback + move()$Knockback.Scaling * 
+                                                 char_stats[Character == input$char_victim, Knockback.Adjustment] * (input$damage + move()$Damage) * 0.12),
+                        theta = theta,
+                        t_max = move()$Base.Knockback * 4 * ((char_stats[Character == input$char_victim, Knockback.Adjustment] - 1) * 0.6 + 1) +
+                          (input$damage + move()$Damage) * 0.12 * move()$Knockback.Scaling * 4 * 0.65 * 
+                          char_stats[Character == input$char_victim, Knockback.Adjustment], 
+                        g = scaling_factor * char_stats[Character == input$char_victim, Hitstun.Gravity.Accel],
+                        air_friction = scaling_factor * char_stats[Character == input$char_victim, Air.Friction],
+                        drift = as.numeric(input$drift))
+        
+        p_traj_in_out <- p_traj_in_out[['plot']]
+      }
+      
+      return(p_traj_in_out)
+    }
+  }) %>% bindCache(input$char, input$tabs, input$damage, input$drift, input$char_victim, input$xy)
   
-  top = 570 # floor to top blastzone
-  side = 464 # ledge to side blastzone
-  bottom = 432 # floor to bottom blastzone
-  ground = 336 # half of ground width 
-  plats = NULL # array of platforms
-  camera = 182 # starting camera height
+  p_traj <- reactive({
+    if (move()[,.N] > 0) {
+      # print((1/2) * (move()$Base.Knockback + move()$Knockback.Scaling * 
+      #                  char_stats[Character == input$char_victim, Knockback.Adjustment] * (input$damage + move()$Damage) * 0.12))
+      p_traj <- p_traj_in_out() %>% 
+        add_quadratic(x0 = canvas_w / 2 + input$xy[['x']] * canvas_w / 2,
+                      y0 = canvas_h / 2 + input$xy[['y']] * canvas_h / 2,
+                      v0 = scaling_factor * (move()$Base.Knockback + move()$Knockback.Scaling * 
+                                               char_stats[Character == input$char_victim, Knockback.Adjustment] * 
+                                               (input$damage + move()$Damage) * 0.12),
+                      theta = angles()[2],
+                      t_max = move()$Base.Knockback * 4 * 
+                        ((char_stats[Character == input$char_victim, Knockback.Adjustment] - 1) * 0.6 + 1) +
+                        (input$damage + move()$Damage) * 0.12 * move()$Knockback.Scaling * 4 * 0.65 * 
+                        char_stats[Character == input$char_victim, Knockback.Adjustment],
+                      g = scaling_factor * char_stats[Character == input$char_victim, Hitstun.Gravity.Accel],
+                      air_friction = scaling_factor * char_stats[Character == input$char_victim, Air.Friction],
+                      drift = as.numeric(input$drift))
+      return(p_traj)
+    }
+  })
   
-  p <- plotly_empty(width = canvas_w, height = canvas_h) %>% 
-    layout(shapes = list(
-      list(type = "rect",
-           fillcolor = '' , line = list(color = "black"),
-           x0 = canvas_w / 2 - ground - side, 
-           x1 = canvas_w / 2 + ground + side,
-           y0 = canvas_h / 2 - bottom,
-           y1 = canvas_h / 2 + top,
-           xref = "x",
-           yref = "y"),
-      list(type = "rect",
-           fillcolor = '' , line = list(color = "black"),
-           x0 = canvas_w / 2 - ground, 
-           x1 = canvas_w / 2 + ground,
-           y0 = canvas_h / 2 - bottom,
-           y1 = canvas_h / 2,
-           xref = "x",
-           yref = "y")))
+  output$move_kills <- renderText({
+    if (p_traj()[['xmin']] < canvas_w / 2 - stages[[input$stages]][['side']] |
+        p_traj()[['xmax']] > canvas_w / 2 + stages[[input$stages]][['ground']] + stages[[input$stages]][['side']] |
+        p_traj()[['ymin']] < canvas_h / 2 - stages[[input$stages]][['bottom']] |
+        p_traj()[['ymax']] > canvas_h / 2 + stages[[input$stages]][['top']]) {
+      '<font color="Tomato">Kills</font>'
+    } else { 
+      'Does not kill'
+    }
+  })
   
-  BKB = 8
-  Knockback_Adj = 1
-  Damage = 100
-  Knockback_scaling = 0.75
+  output$plot <- renderPlotly(p_traj()[['plot']])
   
-  KB = BKB + (Knockback_scaling * Knockback_Adj * Damage * 0.12)
-  hitstun = BKB * 4 * ((Knockback_Adj - 1) * 0.6 + 1) + Damage * 0.12 * Knockback_scaling * 4 * 0.65 * Knockback_Adj
-  v0 = 9
-  
-  p <- p %>% add_quadratic(canvas_w / 2, canvas_h / 2, 
-                      v0 = KB,
-                      theta = pi / 4,
-                      t_max = hitstun,
-                      g = 0.5)
-  
-  output$plot <- renderPlotly(p)
-  
-  # list(type = 'line',
-  #      line = list(color = 'pink'),
-  #      x0 = 0.5, x1 = 0.75, xref = "x",
-  #      y0 = 2, y1 = 2, yref = "y")))
-  
+  output$angle_text <- renderText({
+    paste0('Launch angle: ', move()[, Angle], "°")
+  })
 }
