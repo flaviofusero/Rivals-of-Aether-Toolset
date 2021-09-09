@@ -1,0 +1,6 @@
+standard colors to trajectories
+introduce hitstun modifier
+write traj in c++
+data quality and pictures
+grounded / sakurai angles?
+implement on-click events

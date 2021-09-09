@@ -1,18 +1,20 @@
 library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
+library(shinyjs)
 library(plotly)
 library(data.table)
 library(stringr)
 library(openxlsx)
 library(glue)
-library(shinyXYpad)
 
-header <- dashboardHeader()
+header <- dashboardHeader(title = 'RoA KB Calculator')
 
 sidebar <- dashboardSidebar(
   
   # fluidRow(column(12, offset = 1, h4('Attacker inputs'))),
+  
+  useShinyjs(),
   
   selectizeInput('char',
                  label = 'Attacker',
@@ -22,6 +24,7 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     id = "tabs",
     menuItem("Jab", tabName = glue("jab")),
+    menuItem("Dash Attack", tabName = glue("da")),
     menuItem("Tilts", tabName = glue("Tilts"),
              menuSubItem("Ftilt", tabName = glue("ftilt")),
              menuSubItem("Utilt", tabName = glue("utilt")),
@@ -32,7 +35,7 @@ sidebar <- dashboardSidebar(
              menuSubItem("Ustrong", tabName = glue("ustrong")),
              menuSubItem("Dstrong", tabName = glue("dstrong"))
     ),
-    menuItem("Aerials", tabName = glue("aerials"),
+    menuItem("Aerials", tabName = glue("aerials"), startExpanded = TRUE,
              menuSubItem("Nair", tabName = glue("nair")),
              menuSubItem("Fair", tabName = glue("fair"), selected = TRUE),
              menuSubItem("Bair", tabName = glue("bair")),
@@ -47,47 +50,78 @@ sidebar <- dashboardSidebar(
     )
   ),
   
+  selectizeInput('hitbox',
+                 label = 'Hitbox',
+                 choices = c('Fair (Sweetspot)', 'Fair', 'Fair (Sour)'),
+                 multiple = FALSE),
+  
   selectizeInput('char_victim',
                  label = 'Victim',
-                 choices = chars,
+                 choices = chars_victim,
                  selected = 'Zetterburn'),
   
-  fluidRow(column(12,
+  fluidRow(column(6,
                   numericInput('damage',
                                label = '% (pre-hit)',
                                min = 0,
                                max = 999,
                                value = 100,
-                               step = 1))
+                               step = 1)
+  ),
+  column(6,
+         selectInput('drift',
+                     label = 'Drift DI',
+                     choices = c(No = 0, 
+                                 In = -1,
+                                 Out = 1)
+         )
+  )
   ),
   
-  knobInput('DI',
-            label = 'DI angle',
-            value = 0,
-            max = 360,
-            step = 5,
-            angleOffset = 90,
-            rotation = 'anticlockwise',
-            width = '80%',
-            height = '80%'),
+  fluidRow( 
+    align = 'center',
+    
+    column(6, align = 'center',
+           prettyCheckbox(
+             inputId = "reverse_hit",
+             label = "Reverse hit", 
+             value = FALSE,
+             status = "primary")
+    ),
+    
+    column(6, align = 'center',
+           prettyCheckbox(
+             inputId = "No_DI",
+             label = "No DI", 
+             value = FALSE,
+             status = "primary")
+    )
+  ),
   
-  selectInput('drift',
-              label = 'Drift DI',
-              choices = c(None = 0, 
-                          In = -1,
-                          Out = 1)
+  fluidRow(
+    align = 'center',
+    knobInput('DI',
+              label = 'DI angle',
+              value = 40,
+              max = 360,
+              step = 5,
+              angleOffset = 90,
+              rotation = 'anticlockwise',
+              width = '80%',
+              height = '80%')
   )
 )
 
 body <- dashboardBody(
-  fluidPage(
-    fluidRow(titlePanel('Rivals of Aether knockback calculator')),
+  fluidPage( 
+    title = 'Rivals of Aether Knockback Calculator',
+    # fluidRow(titlePanel('Rivals of Aether Knockback Calculator')),
+    # 
+    # br(),
     
-    br(),
-    
-    fluidRow(selectizeInput('stages',
+    fluidRow(selectizeInput('stage',
                             label = NULL,
-                            choices = names(stages))
+                            choices = names(stages) %>% sort)
     ),
     
     fluidRow(
@@ -107,7 +141,10 @@ body <- dashboardBody(
                  fluidRow(
                    h3(htmlOutput('move_kills')),
                    br(),
-                   h4(textOutput('angle_text'))
+                   h4(textOutput('angle_text')),
+                   h4(textOutput('velocity_text')),
+                   h4(textOutput('DI_in_text')),
+                   h4(textOutput('DI_out_text'))
                  )
           )
       )
@@ -116,16 +153,45 @@ body <- dashboardBody(
     fluidRow(
       column(width = 8,
              align = 'center',
+             # fluidRow(
+             #   XYpadInput("xy", label = "Control hit location", pointRadius = 5, 
+             #              x = "X", y = "Y",
+             #              value = list(x = 0, y = 0),
+             #              xmin = -1, xmax = 1,
+             #              ymin = -1, ymax = 1,
+             #              width = 150,
+             #              height = 150,
+             #              coordsColor = "orange", 
+             #              xyColor = "red", xySize = 14, xyStyle = "oblique",
+             #              onMove = TRUE)
+             # ),
+             
              fluidRow(
-               XYpadInput("xy", label = "Control hit location", pointRadius = 5, 
-                          x = "X", y = "Y",
-                          value = list(x = 0, y = 0),
-                          xmin = -1, xmax = 1,
-                          ymin = -1, ymax = 1,
-                          width = 150,
-                          height = 150,
-                          coordsColor = "orange", 
-                          xyColor = "red", xySize = 14, xyStyle = "oblique")
+               column(6,
+                      align = 'right',
+                      numericInput('x0',
+                                   label = 'Control hit location - X',
+                                   min = -100,
+                                   max = 100,
+                                   value = 0,
+                                   step = 1)
+               ),
+               # column(2,
+               #        align = 'center',
+               #        actionBttn('reset_xy',
+               #                   label = 'Reset to (0, 0)',
+               #                   style = 'simple',
+               #                   color = 'success')
+               # ),
+               column(6,
+                      align = 'left',
+                      numericInput('y0',
+                                   label = 'Control hit location - Y',
+                                   min = -100,
+                                   max = 100,
+                                   value = 0,
+                                   step = 1)
+               )
              )
       )
     )
