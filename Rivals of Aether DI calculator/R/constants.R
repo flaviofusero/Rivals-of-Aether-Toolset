@@ -9,6 +9,7 @@ library(data.table)
 library(stringr)
 library(openxlsx)
 library(glue)
+library(Rcpp)
 
 nvl <- function(x, y) {
   if (isTRUE(is.na(x)) | isTRUE(is.null(x))) {

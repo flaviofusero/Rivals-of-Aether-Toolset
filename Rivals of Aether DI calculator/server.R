@@ -7,6 +7,7 @@ library(data.table)
 library(stringr)
 library(openxlsx)
 library(glue)
+library(Rcpp)
 
 server = function(input, output) {
   

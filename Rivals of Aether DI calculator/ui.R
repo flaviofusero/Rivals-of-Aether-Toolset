@@ -7,6 +7,7 @@ library(data.table)
 library(stringr)
 library(openxlsx)
 library(glue)
+library(Rcpp)
 
 header <- dashboardHeader(title = 'RoA KB Calculator')
 

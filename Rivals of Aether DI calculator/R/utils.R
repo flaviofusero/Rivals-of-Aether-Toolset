@@ -7,6 +7,7 @@ library(data.table)
 library(stringr)
 library(openxlsx)
 library(glue)
+library(Rcpp)
 
 nvl <- function(x, y) {
   if (isTRUE(is.na(x)) | isTRUE(is.null(x))) {
@@ -51,7 +52,4 @@ parse_char_stats <- function() {
 
 get_move_data <- function(char_move) {
   move_data <- get(unlist(strsplit(char_move, '_'))[1])[Moves %like% paste0('.*', unlist(strsplit(char_move, '_'))[2], '.*')]
-  
-  # # For the moment, take the move with the greatest BKB and (in case of ties) KBS
-  # move_data[, .SD[which.max(nvl(Knockback.Scaling, -1))], by = Base.Knockback][, .SD[which.max(Base.Knockback)]][1]
 }
