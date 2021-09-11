@@ -8,12 +8,12 @@ library(stringr)
 library(openxlsx)
 library(glue)
 library(Rcpp)
+library(htmlwidgets)
+library(DT)
 
 header <- dashboardHeader(title = 'RoA KB Calculator')
 
 sidebar <- dashboardSidebar(
-  
-  # fluidRow(column(12, offset = 1, h4('Attacker inputs'))),
   
   useShinyjs(),
   
@@ -21,6 +21,8 @@ sidebar <- dashboardSidebar(
                  label = 'Attacker',
                  choices = chars,
                  selected = 'Zetterburn'),
+  
+  div(style = "margin-top:-15px"),
   
   sidebarMenu(
     id = "tabs",
@@ -53,13 +55,19 @@ sidebar <- dashboardSidebar(
   
   selectizeInput('hitbox',
                  label = 'Hitbox',
-                 choices = c('Fair (Sweetspot)', 'Fair', 'Fair (Sour)'),
+                 choices = c('Fair (Sweetspot)' = 'Zetterburn_Fair (Sweetspot)', 
+                 'Fair' = 'Zetterburn_Fair', 
+                 'Fair (Sour)' = 'Zetterburn_Fair (Sour)'),
                  multiple = FALSE),
+  
+  div(style = "margin-top:-15px"),
   
   selectizeInput('char_victim',
                  label = 'Victim',
                  choices = chars_victim,
                  selected = 'Zetterburn'),
+  
+  div(style = "margin-top:-15px"),
   
   fluidRow(column(6,
                   numericInput('damage',
@@ -78,6 +86,8 @@ sidebar <- dashboardSidebar(
          )
   )
   ),
+  
+  div(style = "margin-top:-15px"),
   
   fluidRow( 
     align = 'center',
@@ -99,6 +109,20 @@ sidebar <- dashboardSidebar(
     )
   ),
   
+  div(style = "margin-top:-15px"),
+  
+  fluidRow( 
+    align = 'center',
+    
+    column(12, align = 'left',
+           prettyCheckbox(
+             inputId = "autosnap",
+             label = "Autosnap to ground", 
+             value = TRUE,
+             status = "primary")
+    )
+  ),
+  
   fluidRow(
     align = 'center',
     knobInput('DI',
@@ -110,91 +134,78 @@ sidebar <- dashboardSidebar(
               rotation = 'anticlockwise',
               width = '80%',
               height = '80%')
+  ),
+  
+  fluidRow(
+    align = 'center',
+    knobInput('DIaaaa',
+              label = 'Damage (%)',
+              value = 100,
+              max = 999,
+              step = 1,
+              angleOffset = 90,
+              rotation = 'anticlockwise',
+              width = '80%',
+              height = '80%')
   )
 )
 
 body <- dashboardBody(
-  fluidPage( 
+  navbarPage( 
     title = 'Rivals of Aether Knockback Calculator',
-    # fluidRow(titlePanel('Rivals of Aether Knockback Calculator')),
-    # 
-    # br(),
-    
-    fluidRow(selectizeInput('stage',
-                            label = NULL,
-                            choices = names(stages) %>% sort)
-    ),
-    
-    fluidRow(
-      box(width = 12,
-          align = 'center',
-          
-          column(width = 8,
-                 align = 'center',
-                 plotlyOutput(outputId = "plot", width = canvas_w, height = canvas_h)
-          ),
-          
-          column(width = 4,
-                 align = 'center',
-                 fluidRow(
-                   uiOutput(outputId = "image")
-                 ),
-                 fluidRow(
-                   h3(htmlOutput('move_kills')),
-                   br(),
-                   h4(textOutput('angle_text')),
-                   h4(textOutput('velocity_text')),
-                   h4(textOutput('DI_in_text')),
-                   h4(textOutput('DI_out_text'))
-                 )
-          )
-      )
-    ),
-    
-    fluidRow(
-      column(width = 8,
-             align = 'center',
-             # fluidRow(
-             #   XYpadInput("xy", label = "Control hit location", pointRadius = 5, 
-             #              x = "X", y = "Y",
-             #              value = list(x = 0, y = 0),
-             #              xmin = -1, xmax = 1,
-             #              ymin = -1, ymax = 1,
-             #              width = 150,
-             #              height = 150,
-             #              coordsColor = "orange", 
-             #              xyColor = "red", xySize = 14, xyStyle = "oblique",
-             #              onMove = TRUE)
-             # ),
+    tabPanel('Calculator',
+             
+             tags$head(tags$style(HTML('
+              .box-body {
+                  padding-top: 0px;
+                  margin-top: 0px;
+                  padding-left: 0px;
+                  margin-left: 0px;
+                  padding-bottom: 0px;
+                  margin-bottom: 0px;
+              }'))),
+             
+             # fluidRow(titlePanel('Rivals of Aether Knockback Calculator')),
+             # 
+             # br(),
+             
+             fluidRow(selectizeInput('stage',
+                                     label = NULL,
+                                     choices = names(stages) %>% sort)
+             ),
              
              fluidRow(
-               column(6,
-                      align = 'right',
-                      numericInput('x0',
-                                   label = 'Control hit location - X',
-                                   min = -100,
-                                   max = 100,
-                                   value = 0,
-                                   step = 1)
-               ),
-               # column(2,
-               #        align = 'center',
-               #        actionBttn('reset_xy',
-               #                   label = 'Reset to (0, 0)',
-               #                   style = 'simple',
-               #                   color = 'success')
-               # ),
-               column(6,
-                      align = 'left',
-                      numericInput('y0',
-                                   label = 'Control hit location - Y',
-                                   min = -100,
-                                   max = 100,
-                                   value = 0,
-                                   step = 1)
+               box(width = 12,
+                   align = 'center',
+                   column(width = 8,
+                          align = 'left',
+                          plotlyOutput(outputId = "plot", 
+                                       width = canvas_w, 
+                                       height = canvas_h)
+                   ),
+                   
+                   column(width = 4,
+                          align = 'center',
+                          br(),
+                          fluidRow(
+                            uiOutput(outputId = "image")
+                          ),
+                          fluidRow(
+                            h3(htmlOutput('move_kills')),
+                            br(),
+                            h4(textOutput('angle_text')),
+                            h4(textOutput('velocity_text')),
+                            h4(textOutput('hitstun_text')),
+                            h4(textOutput('DI_in_text')),
+                            h4(textOutput('DI_out_text')),
+                            h4(textOutput('grounded_text'))
+                          )
+                   )
                )
              )
-      )
+    ),
+    tabPanel('Character stats',
+             DTOutput('table')
     )
   )
 )
