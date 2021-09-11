@@ -1,50 +1,39 @@
-draw_stage <- function(stage) {
+draw_stage <- function(stage_elements) {
   
   m <- list(
     l = 0,
     r = 0,
     b = 0,
     t = 0,
-    pad = 4
+    pad = 0
   )
   
-  p <- plotly_empty(width = canvas_w, height = canvas_h) %>% 
-    layout(shapes = list(
-      list(type = "rect",
-           fillcolor = '' , line = list(color = "black"),
-           x0 = canvas_w / 2 - stages[[stage]][['ground']] - stages[[stage]][['side']], 
-           y0 = canvas_h / 2 - stages[[stage]][['bottom']],
-           x1 = canvas_w / 2 + stages[[stage]][['ground']] + stages[[stage]][['side']],
-           y1 = canvas_h / 2 + stages[[stage]][['top']]),
-      list(type = "rect",
-           fillcolor = '' , line = list(color = "black"),
-           x0 = canvas_w / 2 - stages[[stage]][['ground']], 
-           y0 = canvas_h / 2 - nvl(x = stages[[stage]][['pineapple']], y = stages[[stage]][['bottom']]),
-           x1 = canvas_w / 2 + stages[[stage]][['ground']],
-           y1 = canvas_h / 2)
-    ),
-    xaxis = list(title = '',
-                 range = c(0, canvas_w),
-                 automargin = FALSE),
-    yaxis = list(title = '',
-                 range = c(0, canvas_h),
-                 automargin = FALSE),
-    autosize = F,
-    margin = m,
-    showlegend = FALSE
-    )
-  
-  for (plat in stages[[stage]][['plats']]) {
-    p <- p %>% add_segments(
-      line = list(color = "black"),
-      x = canvas_w / 2 - stages[[stage]][['ground']] + plat[2],
-      y = canvas_h / 2 + plat[1],
-      xend = canvas_w / 2 - stages[[stage]][['ground']] + plat[2] + plat[3],
-      yend = canvas_h / 2 + plat[1],
-      hoverinfo = 'skip'
-    )
-  } 
-  
+  p <- plotly_empty(width = canvas_w, 
+                    height = canvas_h,
+                    type = 'scatter',
+                    mode = 'markers',
+                    x = x_default, 
+                    y = y_default,
+                    # name = 'Custom DI',
+                    # customdata = t,
+                    hovertemplate = paste0('(%{x:.0f}, %{y:.0f}<extra></extra>)'
+                                           # '<br><b>Frame</b>: %{customdata[0]}',
+                                           # '<br><b>Drift</b>: %{customdata[2]}'
+                    )) %>% 
+    layout(shapes = stage_elements,
+           xaxis = list(title = '',
+                        range = c(0, canvas_w),
+                        automargin = FALSE),
+           yaxis = list(title = '',
+                        range = c(0, canvas_h),
+                        automargin = FALSE),
+           autosize = F,
+           margin = m,
+           showlegend = FALSE
+    ) %>% 
+    onRender(click_anywhere, data = "clickposition")
+
+  p$x$layout$margin$l <- p$x$layout$margin$r <- p$x$layout$margin$b <- p$x$layout$margin$t <- p$x$layout$margin$pad <- 0
+
   return(p)
-  
 }
