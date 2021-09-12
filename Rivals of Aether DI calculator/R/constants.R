@@ -86,9 +86,7 @@ chars <-  c('Absa', 'Clairen', 'Etalus', 'Elliana', 'Forsburn', 'Kragg', 'Maypul
 
 chars_victim <- c(chars, 'Etalus (armor)') %>% sort
 
-scaling_factor <- 0.5
-js_click_x_offset <- 275 # offsert given by js_clickanywhere.js. Not sure why this happens. Must be corrected by hand
-js_click_y_offset <- -185 #-130 # offsert given by js_clickanywhere.js. Not sure why this happens. Must be corrected by hand
+scaling_factor <- 1
 
 for (c in chars) {
   assign(c, suppressWarnings(parse_char_moves_data(c)))
@@ -96,10 +94,7 @@ for (c in chars) {
 
 char_stats <- parse_char_stats()
 
-drift_val = 1.25
-
-canvas_w = 1900 * scaling_factor
-canvas_h = 1250 * scaling_factor
+snap_tol = 20
 
 agates_plats = list(c(112, 36, 156), c(112, 452, 156), c(112, 164, 156), c(112, 324, 156))
 armada_plats = list(c(176, -4, 184), c(176, 508, 184))
@@ -148,16 +143,26 @@ stages <- lapply(stages, function(x) {
   })
 })
 
+max_bz_bottom = lapply(stages, '[[', 'bottom') %>% unlist %>%  max 
+max_bz_top = lapply(stages, '[[', 'top') %>% unlist %>%  max
+max_bz_h = max_bz_bottom + max_bz_top
+max_bz_w = 2 * (lapply(stages, '[[', 'ground') %>% unlist + lapply(stages, '[[', 'side') %>% unlist) %>% max
+buffer_w = 100
+buffer_h = 50
+
+canvas_w = max_bz_w + buffer_w
+canvas_h = max_bz_h + buffer_h
+center_w = canvas_w / 2
+center_h = max_bz_bottom + buffer_h / 2
+
 # Corresponding to default x, y for zet fair at default inputs
 # Used for the initial plot
-
-x_default = canvas_w / 2 + c(0.000000,6.959514,13.919028,20.878541,27.838055,34.797569,41.757083,48.716596,55.676110,62.635624,69.595138,76.554651
+x_default = center_w + 2 * c(0.000000,6.959514,13.919028,20.878541,27.838055,34.797569,41.757083,48.716596,55.676110,62.635624,69.595138,76.554651
       ,83.514165,90.473679,97.433193,104.392706,111.352220,118.311734,125.271248,132.230762,139.190275,146.149789,153.109303,160.068817
       ,167.028330,173.987844,180.947358,187.906872,194.866385,201.825899,208.785413,215.744927,222.704441,229.663954,236.623468,243.582982
       ,250.542496,257.502009,264.461523,271.421037,278.380551,285.340064,292.299578,299.259092,306.218606,313.178119,320.137633,327.097147
       ,334.056661,341.016175,347.975688,354.935202,361.894716,368.854230,375.813743,382.773257,389.732771,396.692285)
-
-y_default = canvas_h / 2 - 50 +c(0.000000,5.839725,11.429451,16.769176,21.858902,26.698627,31.288353,35.628078,39.717803,43.557529,47.147254,50.486980
+y_default = center_h +  2 + 2 * c(0.000000,5.839725,11.429451,16.769176,21.858902,26.698627,31.288353,35.628078,39.717803,43.557529,47.147254,50.486980
       ,53.576705,56.416431,59.006156,61.345882,63.435607,65.275332,66.865058,68.204783,69.294509,70.134234,70.723960,71.063685
       ,71.153410,70.993136,70.582861,69.922587,69.012312,67.852038,66.441763,64.781488,62.871214,60.710939,58.300665,55.640390
       ,52.730116,49.569841,46.159566,42.499292,38.589017,34.428743,30.018468,25.358194,20.447919,15.287645,9.877370,4.217095

@@ -11,9 +11,11 @@ library(Rcpp)
 library(htmlwidgets)
 library(DT)
 
-header <- dashboardHeader(title = 'RoA KB Calculator')
+header <- dashboardHeader(title = 'RoA KB Calculator', 
+                          titleWidth = 350)
 
 sidebar <- dashboardSidebar(
+  width = 350,
   
   useShinyjs(),
   
@@ -56,8 +58,8 @@ sidebar <- dashboardSidebar(
   selectizeInput('hitbox',
                  label = 'Hitbox',
                  choices = c('Fair (Sweetspot)' = 'Zetterburn_Fair (Sweetspot)', 
-                 'Fair' = 'Zetterburn_Fair', 
-                 'Fair (Sour)' = 'Zetterburn_Fair (Sour)'),
+                             'Fair' = 'Zetterburn_Fair', 
+                             'Fair (Sour)' = 'Zetterburn_Fair (Sour)'),
                  multiple = FALSE),
   
   div(style = "margin-top:-15px"),
@@ -69,30 +71,36 @@ sidebar <- dashboardSidebar(
   
   div(style = "margin-top:-15px"),
   
-  fluidRow(column(6,
-                  numericInput('damage',
-                               label = '% (pre-hit)',
-                               min = 0,
-                               max = 999,
-                               value = 100,
-                               step = 1)
-  ),
-  column(6,
-         selectInput('drift',
-                     label = 'Drift DI',
-                     choices = c(No = 0, 
-                                 In = -1,
-                                 Out = 1)
-         )
-  )
+  fluidRow(
+    algin = 'center',
+    column(12,
+           selectInput('drift',
+                       label = 'Drift DI',
+                       choices = c(No = 0, 
+                                   In = -1,
+                                   Out = 1))
+    )
   ),
   
   div(style = "margin-top:-15px"),
   
+  fluidRow(
+  ),
+  
   fluidRow( 
     align = 'center',
     
-    column(6, align = 'center',
+    column(4, align = 'center',
+           style = 'margin-right:0px;',
+           prettyCheckbox(
+             inputId = "autosnap",
+             label = "Snap to ground", 
+             value = TRUE,
+             status = "primary")
+    ),
+    
+    column(4, align = 'center',
+           style = 'margin-right:-2px;',
            prettyCheckbox(
              inputId = "reverse_hit",
              label = "Reverse hit", 
@@ -100,10 +108,11 @@ sidebar <- dashboardSidebar(
              status = "primary")
     ),
     
-    column(6, align = 'center',
+    column(4, align = 'center',
+           style = 'padding-right:0px; margin-left:-2px;',
            prettyCheckbox(
              inputId = "No_DI",
-             label = "No DI", 
+             label = "No DI",
              value = FALSE,
              status = "primary")
     )
@@ -111,42 +120,42 @@ sidebar <- dashboardSidebar(
   
   div(style = "margin-top:-15px"),
   
-  fluidRow( 
-    align = 'center',
-    
-    column(12, align = 'left',
-           prettyCheckbox(
-             inputId = "autosnap",
-             label = "Autosnap to ground", 
-             value = TRUE,
-             status = "primary")
+  # fluidRow(
+  #   style = "padding-left:50px",
+  #   uiOutput(outputId = "infocircle")
+  # ),
+  
+  div(style = "margin-top:-15px"),
+  
+  fluidRow(
+    column(6,
+           align = 'center',
+           style='padding-left:15px;',
+           knobInput('damage',
+                     label = '% (pre-hit)',
+                     value = 100,
+                     max = 999,
+                     step = 1,
+                     angleOffset = 90,
+                     rotation = 'anticlockwise',
+                     post = '%',
+                     width = '100%',
+                     height = '100%')
+    ),
+    column(6,
+           align = 'center',
+           style='padding-right:15px;',
+           knobInput('DI',
+                     label = 'DI angle',
+                     value = 40,
+                     max = 360,
+                     step = 5,
+                     angleOffset = 90,
+                     rotation = 'anticlockwise',
+                     width = '100%',
+                     height = '100%')
     )
-  ),
-  
-  fluidRow(
-    align = 'center',
-    knobInput('DI',
-              label = 'DI angle',
-              value = 40,
-              max = 360,
-              step = 5,
-              angleOffset = 90,
-              rotation = 'anticlockwise',
-              width = '80%',
-              height = '80%')
-  ),
-  
-  fluidRow(
-    align = 'center',
-    knobInput('DIaaaa',
-              label = 'Damage (%)',
-              value = 100,
-              max = 999,
-              step = 1,
-              angleOffset = 90,
-              rotation = 'anticlockwise',
-              width = '80%',
-              height = '80%')
+    
   )
 )
 
@@ -165,27 +174,32 @@ body <- dashboardBody(
                   margin-bottom: 0px;
               }'))),
              
-             # fluidRow(titlePanel('Rivals of Aether Knockback Calculator')),
-             # 
-             # br(),
-             
              fluidRow(selectizeInput('stage',
                                      label = NULL,
                                      choices = names(stages) %>% sort)
              ),
              
              fluidRow(
-               box(width = 12,
-                   align = 'center',
-                   column(width = 8,
-                          align = 'left',
-                          plotlyOutput(outputId = "plot", 
-                                       width = canvas_w, 
-                                       height = canvas_h)
-                   ),
-                   
-                   column(width = 4,
+               column(width = 9,
+                      align = 'left',
+                      box(width = 12,
                           align = 'center',
+                          h4('Click anywhere on the chart to move the trajectory'),
+                          h5('DI and % can be input via mouse, keyboard or mouse wheel'),
+                          plotlyOutput(outputId = "plot" ,
+                                       width = '100%',
+                                       height = 500
+                          )
+                      )
+               ),
+               
+               column(width = 3,
+                      align = 'center',
+                      box(width = 12,
+                          align = 'center',
+                          br(),
+                          br(),
+                          br(),
                           br(),
                           fluidRow(
                             uiOutput(outputId = "image")
@@ -200,9 +214,43 @@ body <- dashboardBody(
                             h4(textOutput('DI_out_text')),
                             h4(textOutput('grounded_text'))
                           )
-                   )
+                      )
                )
              )
+             
+             ###
+             # fluidRow(
+             #   box(width = 12,
+             #       align = 'left',
+             #       column(width = 12,
+             #              align = 'left',
+             #              plotlyOutput(outputId = "plot" ,
+             #                           width = '100%', 
+             #                           height = 700,
+             #              )
+             #       )
+             #       ),
+             #       
+             #       fluidRow(
+             #              align = 'center',
+             #              br(),
+             #              fluidRow(
+             #                uiOutput(outputId = "image")
+             #              ),
+             #              fluidRow(
+             #                h3(htmlOutput('move_kills')),
+             #                br(),
+             #                h4(textOutput('angle_text')),
+             #                h4(textOutput('velocity_text')),
+             #                h4(textOutput('hitstun_text')),
+             #                h4(textOutput('DI_in_text')),
+             #                h4(textOutput('DI_out_text')),
+             #                h4(textOutput('grounded_text'))
+             #              )
+             #   )
+             # )
+             # ###
+             
     ),
     tabPanel('Character stats',
              DTOutput('table')

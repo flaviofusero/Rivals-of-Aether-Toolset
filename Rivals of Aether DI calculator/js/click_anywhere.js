@@ -4,17 +4,16 @@ click_anywhere <- "
       var gd = document.getElementById(id);
       var d3 = Plotly.d3;
       Plotly.plot(id).then(attach);
-        function attach() {
-          var xaxis = gd._fullLayout.xaxis;
-          var yaxis = gd._fullLayout.yaxis;
-          var l = gd._fullLayout.margin.l;
-          var t = gd._fullLayout.margin.t;
-          var coordinates = [null, null]
-    
-          gd.addEventListener('click', function(evt) {
-            var coordinates = [xaxis.p2c(evt.x), yaxis.p2c(evt.y)];
-            Shiny.setInputValue(inputName, coordinates);
-          });
-        };
+      function attach() {
+      var coordinates = [null, null]
+  
+      gd.addEventListener('click', function(evt) {
+        var bb = evt.target.getBoundingClientRect();
+        var x = gd._fullLayout.xaxis.p2d(evt.clientX - bb.left);
+        var y = gd._fullLayout.yaxis.p2d(evt.clientY - bb.top);
+        var coordinates = [x, y];
+        Shiny.setInputValue(inputName, coordinates);
+      });
+    };
   }
   "

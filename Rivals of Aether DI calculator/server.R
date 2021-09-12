@@ -36,9 +36,9 @@ server = function(input, output, session) {
   stage_canvas <- reactive({ draw_stage(stage_elements()) }) %>% bindCache(input$stage)
   
   snap_to_element <- reactive({ snap_to(elements = stage_elements()[-1], 
-                                        x = input$clickposition[1] - js_click_x_offset,
-                                        y = input$clickposition[2] - js_click_y_offset,
-                                        snap_tol = 10)
+                                        x = input$clickposition[1],
+                                        y = input$clickposition[2],
+                                        snap_tol = snap_tol)
   }) %>% bindCache(input$stage, input$clickposition)
   
   is_grounded <- reactive({ if (!is.na(snap_to_element()) & input$autosnap == TRUE) {
@@ -63,22 +63,22 @@ server = function(input, output, session) {
                    input$autosnap,
                    input$clickposition,
                    input$stage)
-
-    angles <- reactive({
-      angles = parsed_angles()
-      if (between(angles, 90, 270)) {angles <- 180 - angles}
-      
-      DI_offsets = 18 * c('DI out' = -1, 
-                          'Custom DI' = ifelse(input$No_DI, 0, sin((pi / 180) * (input$DI - angles))), 
-                          'DI in' = 1)
-      
-      angles = angles + DI_offsets  %>% 
-        setNames(c('DI out', 'Custom DI', 'DI in'))
-      
-      if (input$reverse_hit) {angles <- 180 - angles}
-      
-      return((pi / 180) * angles)
-    }) %>%
+  
+  angles <- reactive({
+    angles = parsed_angles()
+    if (between(angles, 90, 270)) {angles <- 180 - angles}
+    
+    DI_offsets = 18 * c('DI out' = -1, 
+                        'Custom DI' = ifelse(input$No_DI, 0, sin((pi / 180) * (input$DI - angles))), 
+                        'DI in' = 1)
+    
+    angles = angles + DI_offsets  %>% 
+      setNames(c('DI out', 'Custom DI', 'DI in'))
+    
+    if (input$reverse_hit) {angles <- 180 - angles}
+    
+    return((pi / 180) * angles)
+  }) %>%
     bindCache(input$autosnap,
               input$clickposition,
               input$stage,
@@ -120,15 +120,20 @@ server = function(input, output, session) {
   stage_traj_proxy <- plotlyProxy("plot", session)
   
   x0 <- reactive({ 
-    nvl(input$clickposition[1] - js_click_x_offset, canvas_w / 2) 
+    nvl(input$clickposition[1], center_w) 
   }) %>% bindCache(input$clickposition)
   
   y0 <- reactive({ 
-    if (!is.na(snap_to_element()) & input$autosnap == TRUE) {
-      make_stage_elements(input$stage)[[snap_to_element() + 1]]$y1 
+    if (input$autosnap == TRUE) {
+      if (!is.na(snap_to_element())) { 
+        make_stage_elements(input$stage)[[snap_to_element() + 1]]$y1 
+      } else {
+        nvl(input$clickposition[2], center_h) 
+      }
     } else {
-      nvl(input$clickposition[2] - js_click_y_offset, canvas_h / 2) 
+      nvl(input$clickposition[2], center_h) 
     }
+    
   }) %>% bindCache(input$clickposition,
                    input$stage,
                    input$autosnap)
@@ -140,8 +145,7 @@ server = function(input, output, session) {
            drift = drift(),
            air_friction = air_friction())
   }) %>% 
-    bindCache(input$char,
-              input$hitbox,
+    bindCache(input$hitbox,
               input$char_victim,
               input$damage,
               input$No_DI,
@@ -155,8 +159,7 @@ server = function(input, output, session) {
            v0y = v0() * sin(angles()[2]),
            g = g())
   }) %>% 
-    bindCache(input$char,
-              input$hitbox,
+    bindCache(input$hitbox,
               input$char_victim,
               input$damage,
               input$No_DI,
@@ -164,6 +167,7 @@ server = function(input, output, session) {
               input$reverse_hit,
               input$drift)
   observe({
+    input$stage
     plotlyProxyInvoke(
       stage_traj_proxy,
       "restyle",
@@ -177,15 +181,19 @@ server = function(input, output, session) {
   # Right side outputs --------------------
   
   output$image <- renderUI({
-    tags$img(src = glue("{input$char}/{input$char}_{input$tabs}.png"), width = '50%', height = '50%', style = 'text-align:middle;')
+    tags$img(src = glue("{input$char}/{input$char}_{input$tabs}.png"), width = '80%', height = '80%', style = 'text-align:middle;')
+  })
+  
+  output$infocircle <- renderUI({
+    tags$img(src = "infocircle_question_mark.png", width = 20, height = 20)
   })
   
   output$move_kills <- renderText({
     
-    if (min(x0() + x()) < canvas_w / 2 - stages[[input$stage]][['ground']] - stages[[input$stage]][['side']] |
-        max(x0() + x()) > canvas_w / 2 + stages[[input$stage]][['ground']] + stages[[input$stage]][['side']] |
-        min(y0() + y()) < canvas_h / 2 - stages[[input$stage]][['bottom']] - 50 |
-        max(y0() + y()) > canvas_h / 2 + stages[[input$stage]][['top']] - 50) {
+    if (min(x0() + x()) < center_w - stages[[input$stage]][['ground']] - stages[[input$stage]][['side']] |
+        max(x0() + x()) > center_w + stages[[input$stage]][['ground']] + stages[[input$stage]][['side']] |
+        min(y0() + y()) < center_h - stages[[input$stage]][['bottom']]  |
+        max(y0() + y()) > center_h + stages[[input$stage]][['top']] ) {
       '<font color="Tomato">Kills</font>'
     } else {
       'Does not kill'
