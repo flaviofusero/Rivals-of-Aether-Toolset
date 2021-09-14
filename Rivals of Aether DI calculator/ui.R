@@ -29,7 +29,7 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     id = "tabs",
     menuItem("Jab", tabName = glue("jab")),
-    menuItem("Dash Attack", tabName = glue("da")),
+    menuItem("Dash Attack", tabName = glue("dashattack")),
     menuItem("Tilts", tabName = glue("Tilts"),
              menuSubItem("Ftilt", tabName = glue("ftilt")),
              menuSubItem("Utilt", tabName = glue("utilt")),
@@ -164,15 +164,17 @@ body <- dashboardBody(
     title = 'Rivals of Aether Knockback Calculator',
     tabPanel('Calculator',
              
-             tags$head(tags$style(HTML('
-              .box-body {
-                  padding-top: 0px;
-                  margin-top: 0px;
-                  padding-left: 0px;
-                  margin-left: 0px;
-                  padding-bottom: 0px;
-                  margin-bottom: 0px;
-              }'))),
+             # tags$head(tags$style(HTML('
+             #  .box-body {
+             #      padding-top: 0px;
+             #      margin-top: 0px;
+             #      padding-left: 0px;
+             #      margin-left: 0px;
+             #      padding-bottom: 0px;
+             #      margin-bottom: 0px;
+             #  }
+             #                           
+             #                           '))),
              
              fluidRow(selectizeInput('stage',
                                      label = NULL,
@@ -186,33 +188,35 @@ body <- dashboardBody(
                           align = 'center',
                           h4('Click anywhere on the chart to move the trajectory'),
                           h5('DI and % can be input via mouse, keyboard or mouse wheel'),
+                          div(style = "margin-top:-10px"),
                           plotlyOutput(outputId = "plot" ,
                                        width = '100%',
-                                       height = 500
+                                       height = 600
                           )
+                      ),
+                      box(width = 12,
+                          DTOutput('move_data')
                       )
                ),
                
                column(width = 3,
-                      align = 'center',
+                      # align = 'center',
                       box(width = 12,
-                          align = 'center',
-                          br(),
-                          br(),
-                          br(),
-                          br(),
+                          style='padding-right:30px; padding-left:30px;',
                           fluidRow(
-                            uiOutput(outputId = "image")
+                            uiOutput(outputId = "image", style = 'text-align: center;')
                           ),
                           fluidRow(
-                            h3(htmlOutput('move_kills')),
+                            h3(htmlOutput('selected_hitbox_kills', style = 'text-align: center;')),
                             br(),
                             h4(textOutput('angle_text')),
                             h4(textOutput('velocity_text')),
                             h4(textOutput('hitstun_text')),
                             h4(textOutput('DI_in_text')),
                             h4(textOutput('DI_out_text')),
-                            h4(textOutput('grounded_text'))
+                            h4(textOutput('grounded_text')),
+                            h4(textOutput('armor')),
+                            h5(textOutput('notes'))
                           )
                       )
                )
@@ -252,8 +256,13 @@ body <- dashboardBody(
              # ###
              
     ),
+    
     tabPanel('Character stats',
              DTOutput('table')
+    ),
+    
+    tabPanel('Credits',
+             htmlOutput('credits')
     )
   )
 )

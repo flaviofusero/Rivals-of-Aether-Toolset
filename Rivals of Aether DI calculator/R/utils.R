@@ -27,7 +27,8 @@ parse_char_moves_data <- function(char) {
                     str_replace_all('down', 'd') %>% 
                     str_replace_all('up', 'u') %>% 
                     str_replace_all('forward', 'f') %>% 
-                    str_replace_all('back', 'b')
+                    str_replace_all('back', 'b') %>%
+                    str_replace_all('neutral', 'n')
                   ][
                     , 'Hitstun.Modifier' := gsub('x', '', Hitstun.Modifier, fixed = TRUE)]
   
@@ -58,6 +59,7 @@ get_move_data <- function(char_move) {
 }
 
 snap_to <- function(elements, x, y, snap_tol) {
+  
   is_in_neighborood_x <- lapply(elements, function(e) {
     between(x, e$x0, e$x1)
   })
@@ -74,5 +76,5 @@ snap_to <- function(elements, x, y, snap_tol) {
 parse_angle <- function(move, is_grounded) {
   if (isTRUE(move[,Angle] == 361)) { 
     if (is_grounded == TRUE) 40 else 45
-  } else { move[,Angle] }
+  } else { nvl(move[,Angle], 0) }
 }

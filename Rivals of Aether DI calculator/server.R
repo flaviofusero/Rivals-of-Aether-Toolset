@@ -21,7 +21,7 @@ server = function(input, output, session) {
       inputId = 'hitbox',
       choices = paste0(input$char,
                        '_',
-                       get_move_data(paste0(input$char, '_', input$tabs))[order(-Base.Knockback, -Knockback.Scaling), Ground.Moves]) %>% 
+                       selectable_hitboxes()) %>% 
         setNames(get_move_data(paste0(input$char, '_', input$tabs))[order(-Base.Knockback, -Knockback.Scaling), Ground.Moves])
     )
   })
@@ -41,38 +41,51 @@ server = function(input, output, session) {
                                         snap_tol = snap_tol)
   }) %>% bindCache(input$stage, input$clickposition)
   
-  is_grounded <- reactive({ if (!is.na(snap_to_element()) & input$autosnap == TRUE) {
-    TRUE
-  } else { FALSE }
+  is_grounded <- reactive({ 
+    if (!is.na(snap_to_element()) & input$autosnap == TRUE) {
+      TRUE
+    } else { FALSE }
   }) %>% 
     bindCache(input$stage,
               input$clickposition,
               input$autosnap)
   
-  move <- reactive({ 
+  char_moves <- reactive({
+    get_move_data(paste0(input$char, '_', input$tabs))
+  }) %>% bindCache(input$char, input$tabs)
+  
+  selectable_hitboxes <- reactive({
+    char_moves()[order(-Base.Knockback, -Knockback.Scaling), Ground.Moves]
+  }) %>% bindCache(input$char, input$tabs)
+  
+  selected_hitbox <- reactive({ 
     get(strsplit(input$hitbox, '_', fixed = TRUE)[[1]][1])[Ground.Moves == strsplit(input$hitbox, '_', fixed = TRUE)[[1]][2]]
   }) %>% 
     bindCache(input$hitbox)
-  # If we don't add the bindEvent, then when the char changes, there is a split moment when the hitbox is not updated
+  # When the char changes, there is a split moment when the hitbox is not updated
   # This is bad because then e.g. going from Zetter > fair (sweetpot) to Ori > fair (sweetspot) causes an error as there is no such move
   # We only care about the hitbox anyway so we can let the move update according to that
   
-  parsed_angles <- reactive ({ 
-    parse_angle(move(), is_grounded()) 
+  BKB <- reactive({ nvl(selected_hitbox()$Base.Knockback, 0) }) 
+  KBS <- reactive({ nvl(selected_hitbox()$Knockback.Scaling, 0) }) 
+  hitbox_damage <- reactive({ nvl(selected_hitbox()$Damage, 0) }) 
+  
+  parsed_angle <- reactive ({ 
+    parse_angle(selected_hitbox(), is_grounded()) 
   }) %>% bindCache(input$hitbox,
                    input$autosnap,
                    input$clickposition,
                    input$stage)
   
   angles <- reactive({
-    angles = parsed_angles()
-    if (between(angles, 90, 270)) {angles <- 180 - angles}
+    angle <- parsed_angle()
+    if (between(angle, 90, 270)) {angle <- 180 - angle}
     
     DI_offsets = 18 * c('DI out' = -1, 
-                        'Custom DI' = ifelse(input$No_DI, 0, sin((pi / 180) * (input$DI - angles))), 
+                        'Custom DI' = ifelse(input$No_DI, 0, sin((pi / 180) * (input$DI - angle))), 
                         'DI in' = 1)
     
-    angles = angles + DI_offsets  %>% 
+    angles = angle + DI_offsets %>% 
       setNames(c('DI out', 'Custom DI', 'DI in'))
     
     if (input$reverse_hit) {angles <- 180 - angles}
@@ -92,9 +105,9 @@ server = function(input, output, session) {
     armor_multiplier <- 1 - 0.3 * (tolower(input$char_victim) == 'etalus (armor)')
     
     v0 <- scaling_factor * armor_multiplier *
-      (move()$Base.Knockback + move()$Knockback.Scaling * 
+      (BKB() + KBS() * 
          char_stats[Character == input$char_victim, Knockback.Adjustment] * 
-         (input$damage + move()$Damage) * 0.12)
+         (input$damage + hitbox_damage()) * 0.12)
     
     return(v0)
   }) %>% 
@@ -103,10 +116,11 @@ server = function(input, output, session) {
               input$damage)
   
   t_max <- reactive({
-    move()$Hitstun.Modifier * 
-      (move()$Base.Knockback * 4 * ((char_stats[Character == input$char_victim, Knockback.Adjustment] - 1) * 0.6 + 1) +
-         (input$damage + move()$Damage) * 0.12 * move()$Knockback.Scaling * 4 * 0.65 * 
-         char_stats[Character == input$char_victim, Knockback.Adjustment])
+    nvl(selected_hitbox()$Hitstun.Modifier, 0) * 
+      (BKB() * 4 * ((char_stats[Character == input$char_victim, Knockback.Adjustment] - 1) * 0.6 + 1) +
+         (input$damage + hitbox_damage()) * 0.12 * KBS() * 4 * 0.65 * 
+         char_stats[Character == input$char_victim, Knockback.Adjustment]) %>% 
+      floor
   }) %>% 
     bindCache(input$hitbox,
               input$char_victim,
@@ -120,12 +134,24 @@ server = function(input, output, session) {
   stage_traj_proxy <- plotlyProxy("plot", session)
   
   x0 <- reactive({ 
-    nvl(input$clickposition[1], center_w) 
-  }) %>% bindCache(input$clickposition)
+    # autosnap to (0,0)
+    if (input$autosnap == TRUE &
+        between(nvl(input$clickposition[1], center_w), -(center_w  + snap_tol), center_w + snap_tol) & 
+        between(nvl(input$clickposition[2], center_w), center_h, center_h + snap_tol)) {
+      0
+    } else {
+      nvl(input$clickposition[1], center_w)
+    }
+  }) %>% bindCache(input$clickposition,
+                   input$autosnap)
   
   y0 <- reactive({ 
     if (input$autosnap == TRUE) {
-      if (!is.na(snap_to_element())) { 
+      
+      if (between(nvl(input$clickposition[1], center_w), -(center_w  + snap_tol), center_w + snap_tol) & 
+          between(nvl(input$clickposition[2], center_w), center_h, center_h + snap_tol)) {
+        0
+      } else if (!is.na(snap_to_element())) { 
         make_stage_elements(input$stage)[[snap_to_element() + 1]]$y1 
       } else {
         nvl(input$clickposition[2], center_h) 
@@ -138,10 +164,12 @@ server = function(input, output, session) {
                    input$stage,
                    input$autosnap)
   
-  x <- reactive({
+  # x, y and plot --------------------
+  x <- reactiveValues()
+  x[['DI out']] = reactive({
     make_x(t_max = t_max(),
            scaling_factor = scaling_factor,
-           v0x = v0() * cos(angles()[2]),
+           v0x = v0() * cos(angles()['DI out']),
            drift = drift(),
            air_friction = air_friction())
   }) %>% 
@@ -153,10 +181,43 @@ server = function(input, output, session) {
               input$reverse_hit,
               input$drift)
   
-  y <- reactive({
+  x[['Custom DI']] = reactive({
+    make_x(t_max = t_max(),
+           scaling_factor = scaling_factor,
+           v0x = v0() * cos(angles()['Custom DI']),
+           drift = drift(),
+           air_friction = air_friction())
+  }) %>% 
+    bindCache(input$hitbox,
+              input$char_victim,
+              input$damage,
+              input$No_DI,
+              input$DI,
+              input$reverse_hit,
+              input$drift)
+  
+  x[['DI in']] = reactive({
+    make_x(t_max = t_max(),
+           scaling_factor = scaling_factor,
+           v0x = v0() * cos(angles()['DI in']),
+           drift = drift(),
+           air_friction = air_friction())
+  }) %>% 
+    bindCache(input$hitbox,
+              input$char_victim,
+              input$damage,
+              input$No_DI,
+              input$DI,
+              input$reverse_hit,
+              input$drift)
+  
+  
+  y <- reactiveValues()
+  
+    y[['DI out']] = reactive({
     make_y(t_max = t_max(),
            scaling_factor = scaling_factor,
-           v0y = v0() * sin(angles()[2]),
+           v0y = v0() * sin(angles()['DI out']),
            g = g())
   }) %>% 
     bindCache(input$hitbox,
@@ -166,104 +227,220 @@ server = function(input, output, session) {
               input$DI,
               input$reverse_hit,
               input$drift)
+  
+    y[['Custom DI']] = reactive({
+    make_y(t_max = t_max(),
+           scaling_factor = scaling_factor,
+           v0y = v0() * sin(angles()['Custom DI']),
+           g = g())
+  }) %>% 
+    bindCache(input$hitbox,
+              input$char_victim,
+              input$damage,
+              input$No_DI,
+              input$DI,
+              input$reverse_hit,
+              input$drift)
+  
+    y[['DI in']] = reactive({
+    make_y(t_max = t_max(),
+           scaling_factor = scaling_factor,
+           v0y = v0() * sin(angles()['DI in']),
+           g = g())
+  }) %>% 
+    bindCache(input$hitbox,
+              input$char_victim,
+              input$damage,
+              input$No_DI,
+              input$DI,
+              input$reverse_hit,
+              input$drift)
+    
   observe({
     input$stage
     plotlyProxyInvoke(
       stage_traj_proxy,
       "restyle",
-      list(x = list(x0() + x()), y = list(y0() + y()))
-      # marger.color = list('rgb(231, 99, 250)'),
-      # text = 'test',
-      # traceIndices = list(0, 1)
-    )
+      list(
+        x = list(
+          x0() + x[['DI out']](),
+          x0() + x[['Custom DI']](),
+          x0() + x[['DI in']]()
+        ), 
+        # text = rep(paste0('<br>Frame: ', 0:t_max()), 3),
+        y = list(
+          y0() + y[['DI out']](),
+          y0() + y[['Custom DI']](),
+          y0() + y[['DI in']]()
+          )
+      ),
+        c(1, 2, 3)
+      )
   })
-  
-  # Right side outputs --------------------
-  
-  output$image <- renderUI({
-    tags$img(src = glue("{input$char}/{input$char}_{input$tabs}.png"), width = '80%', height = '80%', style = 'text-align:middle;')
-  })
-  
-  output$infocircle <- renderUI({
-    tags$img(src = "infocircle_question_mark.png", width = 20, height = 20)
-  })
-  
-  output$move_kills <- renderText({
     
-    if (min(x0() + x()) < center_w - stages[[input$stage]][['ground']] - stages[[input$stage]][['side']] |
-        max(x0() + x()) > center_w + stages[[input$stage]][['ground']] + stages[[input$stage]][['side']] |
-        min(y0() + y()) < center_h - stages[[input$stage]][['bottom']]  |
-        max(y0() + y()) > center_h + stages[[input$stage]][['top']] ) {
-      '<font color="Tomato">Kills</font>'
-    } else {
-      'Does not kill'
-    }
-  })
-  
-  output$angle_text <- renderText({
-    paste0('Launch angle: ', 
-           ifelse(between(round(parsed_angles() %% 360), 
-                          90,
-                          270
-           ), 
-           180 - round(parsed_angles()),
-           round(parsed_angles())
-           )
-           %% 360, "°")
-  }) 
-  
-  output$velocity_text <- renderText({
-    paste0('Launch velocity: ', round(v0() / scaling_factor, digits = 1), " pixel / frame")
-  })
-  
-  output$hitstun_text <- renderText({
-    paste0('Frames in hitstun: ', floor(t_max()))
-  })
-  
-  output$DI_in_text <- renderText({
-    paste0('Maximum DI in angle: ', 
-           ifelse(between(round(parsed_angles() %% 360), 
-                          90,
-                          270
-           ), 
-           180 - round(parsed_angles()),
-           round(parsed_angles())
-           ) + 90,
-           "°")
-  })
-  
-  output$DI_out_text <- renderText({
-    paste0('Maximum DI in angle: ', 
-           (ifelse(between(round(parsed_angles() %% 360), 
-                           90,
-                           270
-           ), 
-           180 - round(parsed_angles()),
-           round(parsed_angles())
-           ) - 90) %% 360,
-           "°")
-  })
-  
-  output$grounded_text <- renderText({
-    if (is_grounded()) 'Grounded hit' else 'Mid-air hit'
-  })
-  
-  output$table <- renderDT(
-    datatable(get(input$char)[, -'Moves'],
-              filter = 'top', extensions = c('Buttons', 'Scroller', 'FixedColumns'),
-              options = list(scrollY = 650,
-                             scrollX = 500,
-                             deferRender = TRUE,
-                             scroller = TRUE,
-                             # paging = TRUE,
-                             # pageLength = 25,
-                             buttons = list('excel',
-                                            list(extend = 'colvis', targets = 0, visible = FALSE)),
-                             dom = 'lBfrtip',
-                             fixedColumns = list(leftColumns = 2),
-                             autoWidth = TRUE
-              )
+    # Right side outputs --------------------
+    
+    output$image <- renderUI({
+      tags$img(src = glue("{input$char}/{input$char}_{input$tabs}.png"), width = '80%', height = '80%', style = 'text-align:middle;')
+    })
+    
+    output$infocircle <- renderUI({
+      tags$img(src = "infocircle_question_mark.png", width = 20, height = 20)
+    })
+    
+    output$selected_hitbox_kills <- renderText({
+      
+      if (min(x0() + x[['Custom DI']]()) < center_w - stages[[input$stage]][['ground']] - stages[[input$stage]][['side']] |
+          max(x0() + x[['Custom DI']]()) > center_w + stages[[input$stage]][['ground']] + stages[[input$stage]][['side']] |
+          min(y0() + y[['Custom DI']]()) < center_h - stages[[input$stage]][['bottom']]  |
+          max(y0() + y[['Custom DI']]()) > center_h + stages[[input$stage]][['top']] ) {
+        '<font color="Tomato">Kills</font>'
+      } else {
+        'Does not kill'
+      }
+    })
+    
+    output$angle_text <- renderText({
+      validate(need(BKB() != 0, ''))
+      paste0('Launch angle: ', 
+             ifelse(between(round(parsed_angle() %% 360), 
+                            90,
+                            270
+             ), 
+             180 - round(parsed_angle()),
+             round(parsed_angle())
+             )
+             %% 360, "°")
+    }) 
+    
+    output$velocity_text <- renderText({
+      validate(
+        need(BKB() != 0, '') 
+      )
+      paste0('Launch velocity: ', round(v0() / scaling_factor, digits = 1), " pixel / frame")
+    })
+    
+    output$hitstun_text <- renderText({
+      validate(need(BKB() != 0, ''))
+      paste0('Frames in hitstun: ', floor(t_max()))
+    })
+    
+    output$DI_in_text <- renderText({
+      validate(need(BKB() != 0, ''))
+      paste0('Maximum DI in angle: ', 
+             ifelse(between(round(parsed_angle() %% 360), 
+                            90,
+                            270
+             ), 
+             180 - round(parsed_angle()),
+             round(parsed_angle())
+             ) + 90,
+             "°")
+    })
+    
+    output$DI_out_text <- renderText({
+      validate(need(BKB() != 0, ''))
+      paste0('Maximum DI out angle: ', 
+             (ifelse(between(round(parsed_angle() %% 360), 
+                             90,
+                             270
+             ), 
+             180 - round(parsed_angle()),
+             round(parsed_angle())
+             ) - 90) %% 360,
+             "°")
+    })
+    
+    output$grounded_text <- renderText({
+      validate(need(BKB() != 0, ''))
+      if (is_grounded()) 'Grounded hit' else 'Mid-air hit'
+    })
+    
+    output$armor <- renderText({
+      validate(need(hitbox_damage() != 0, ''))
+      
+      paste0("Breaks Eta's fair armor at (No Ice Armor / Ice Armor): ",
+             round((12 - BKB()) / 
+                     (KBS() * 0.12 * 0.9) - 
+                     hitbox_damage()),
+             '% / ',
+             round((12 - 0.7 * BKB()) / 
+                     (KBS() * 0.7 * 0.12 * 0.9) -
+                     hitbox_damage()),
+             '%'
+      )
+    })
+    
+    output$armor <- renderText({
+      validate(need(hitbox_damage() != 0, ''))
+      
+      paste0("Breaks Eta's fair armor at (No Ice Armor / Ice Armor): ",
+             round((12 - BKB()) / 
+                     (KBS() * 0.12 * 0.9) - 
+                     hitbox_damage()),
+             '% / ',
+             round((12 - 0.7 * BKB()) / 
+                     (KBS() * 0.7 * 0.12 * 0.9) -
+                     hitbox_damage()),
+             '%'
+      )
+    })
+    
+    output$notes <- renderText({
+      validate(need(!is.na(selected_hitbox()$Notes), ''))
+      selected_hitbox()$Notes
+    })
+    
+    output$move_data <- renderDT({
+      cols <- c('Ground.Moves', 'Startup', 'Active.Frames', 'Endlag.(Hit)', 'Endlag.(Whiff)', 'FAF', 'Damage', 'Landing.Lag.(Hit)',
+                'Landing.Lag.(Whiff)', 'Cooldown')
+      
+      move_data <- char_moves()[Ground.Moves %in% selectable_hitboxes(), intersect(cols, colnames(char_moves())), with = F]
+      move_data <- move_data[, colSums(is.na(move_data)) < nrow(move_data), with = FALSE] # Returns only column with at least one non-NA value
+      untidy_cols <- colnames(move_data)
+      tidy_cols <- gsub('.', ' ', gsub('Ground.Moves', 'Move', untidy_cols,  fixed = T), fixed = T)
+      setnames(move_data, old = untidy_cols, new = tidy_cols)
+      datatable(move_data, options = list(dom = 't', paging = FALSE, ordering = FALSE))
+    })
+    
+    
+    # Characters stats -------------------
+    
+    output$table <- renderDT(
+      datatable(get(input$char)[, -'selected_hitboxes'],
+                filter = 'top', extensions = c('Buttons', 'Scroller', 'FixedColumns'),
+                options = list(scrollY = 650,
+                               scrollX = 500,
+                               deferRender = TRUE,
+                               scroller = TRUE,
+                               # paging = TRUE,
+                               # pageLength = 25,
+                               buttons = list(list(extend = 'colvis', targets = 0, visible = FALSE)),
+                               dom = 'lBfrtip',
+                               fixedColumns = list(leftColumns = 2),
+                               autoWidth = TRUE
+                )
+      )
     )
-  )
-  
+    
+    # Credits -------------------
+    
+    output$credits <- renderUI({
+      fd <- 'https://docs.google.com/spreadsheets/d/19UtK7xG2c-ehxdlhCFKMpM4_IHSG-EXFgXLJaunE79I/edit?usp=sharing'
+      stats <- 'https://docs.google.com/spreadsheets/d/14JIjL_5t81JHqnJmU6BSsRosTe2JO8sFGUysM_9tDoU/edit#gid=1576686769'
+      igl_tool <- 'https://jsfiddle.net/IGLima/5sh0pudr/show/'
+      
+      x <- glue({'
+    <p>Tool by Vincent46</p>
+    <br>
+    <p>Input data taken from the following resources (not by me):</p>
+    <p><a href="{fd}">Rivals of Aether Academy Frame Data</a></p>
+    <p><a href="{fd}">Rivals of Aether General Stats</a></p>
+    <p>Thanks to IGL for answering my questions about knockback formulas, directly on Sector 7-G\'s discord and indirectly via his 
+    <a href="{igl_tool}">Knockback Visualizer tool</a></p>
+    '})
+      
+      HTML(x)
+    })
+    
 }
