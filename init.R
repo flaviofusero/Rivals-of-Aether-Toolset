@@ -9,7 +9,8 @@ my_packages = c("shiny",
 "glue",
 "Rcpp",
 "htmlwidgets",
-"DT")
+"DT",
+"htmltools")
 
 install_if_missing = function(p) {
   if (p %in% rownames(installed.packages()) == FALSE) {
