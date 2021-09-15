@@ -1,4 +1,4 @@
-my_packages = c(""shiny",
+my_packages = c("shiny",
 "shinydashboard",
 "shinyWidgets",
 "shinyjs",
