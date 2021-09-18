@@ -1,4 +1,5 @@
 {
+  "Packages": {
     "data.table": {
       "Package": "data.table",
       "Version": "1.14.0",
