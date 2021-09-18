@@ -1,4 +1,4 @@
-FROM rocker/shiny:4.0.0
+FROM rocker/shiny:4.1.1
 
 RUN apt-get update -qq && apt-get -y --no-install-recommends install \ 
     libxml2-dev \
@@ -13,18 +13,19 @@ RUN apt-get update && \
     apt-get clean
 
 # copy the app to the image
-COPY Rivals_of_Aether_Toolset.Rproj /srv/shiny-server/
-COPY app.R /srv/shiny-server/
-COPY server.R /srv/shiny-server/
-COPY ui.R /srv/shiny-server/
-COPY renv.lock srv/shiny-server/
+COPY Rivals_of_Aether_Toolset.Rproj ./Rivals_of_Aether_Toolset.Rproj
+COPY app.R ./app.R
+COPY server.R ./server.R
+COPY ui.R ./ui.R
+COPY run.R ./run.R
+COPY renv.lock ./renv.lock
 
-COPY renv srv/shiny-server/renv/
-COPY R /srv/shiny-server/R/
-COPY input /srv/shiny-server/input/
-COPY www /srv/shiny-server/www/
-COPY cpp /srv/shiny-server/cpp/
-COPY js /srv/shiny-server/js/
+COPY renv /srv/shiny-server/renv/
+COPY R ./R/
+COPY input ./input/
+COPY www ./www/
+COPY cpp ./cpp/
+COPY js ./js/
 
 RUN Rscript -e 'install.packages("renv")'
 RUN Rscript -e 'renv::consent(provided = TRUE)'
@@ -33,9 +34,23 @@ RUN Rscript -e 'renv::restore()'
 # remove install files                       
 RUN rm -rf /var/lib/apt/lists/*
 
+# make all app files readable, gives rwe permisssion (solves issue when dev in Windows, but building in Ubuntu)
+#RUN chmod -R 755 ./Rivals_of_Aether_Toolset.Rproj/
+#RUN chmod -R 755 ./app.R
+#RUN chmod -R 755 ./server.R
+#RUN chmod -R 755 ./ui.R 
+#RUN chmod -R 755 ./run.R
+#RUN chmod -R 755 ./R/
+#RUN chmod -R 755 ./www/
+#RUN chmod -R 755 ./cpp/
+#RUN chmod -R 755 ./js/
+
+# expose port (for local deployment only)
+EXPOSE 3838 
+
 # set non-root                       
 RUN useradd shiny_user
 USER shiny_user
 
 # run app
-CMD ["R", "-e", "shiny::runApp('/srv/shiny-server/', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"]
+CMD ["R", "-e", "shiny::runApp('./', host = '0.0.0.0', port = 3838)"] #as.numeric(Sys.getenv('PORT')))"]

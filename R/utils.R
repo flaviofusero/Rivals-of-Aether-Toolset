@@ -41,7 +41,7 @@ parse_char_moves_data <- function(char) {
   return(char_moves_data)
 }
 
-parse_char_stats <- function() {
+parse_char_stats <- function(chars_victim = chars_victim) {
   char_stats <- as.data.table(readWorkbook('input/RoA General Stats.xlsx',
                                            sheet = 'All Stats',
                                            rows = 3:(3+length(chars_victim))))
