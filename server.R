@@ -22,6 +22,13 @@ server = function(input, output, session) {
   source('ui.R')
   
   # Observes --------------------
+  
+  # Prevents Heroku's greying up after 55 seconds of inactivity
+  observe({     
+    invalidateLater(10000)     
+    cat(".")   
+  })
+  
   observe({
     updateSelectizeInput(
       inputId = 'hitbox',
