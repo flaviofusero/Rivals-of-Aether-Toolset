@@ -46,11 +46,11 @@ RUN rm -rf /var/lib/apt/lists/*
 #RUN chmod -R 755 ./js/
 
 # expose port (for local deployment only)
-EXPOSE 3838 
+# EXPOSE 3838 
 
 # set non-root                       
 RUN useradd shiny_user
 USER shiny_user
 
 # run app
-CMD ["R", "-e", "shiny::runApp('./', host = '0.0.0.0', port = 3838)"] #as.numeric(Sys.getenv('PORT')))"]
+CMD ["R", "-e", "shiny::runApp('./', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"]
