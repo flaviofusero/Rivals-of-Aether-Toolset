@@ -19,7 +19,7 @@ COPY server.R /srv/shiny-server/
 COPY ui.R /srv/shiny-server/
 COPY renv.lock srv/shiny-server/
 
-COPY renv srv/shiny-server/renv
+COPY renv srv/shiny-server/renv/
 COPY R /srv/shiny-server/R/
 COPY input /srv/shiny-server/input/
 COPY www /srv/shiny-server/www/
@@ -38,4 +38,4 @@ RUN useradd shiny_user
 USER shiny_user
 
 # run app
-CMD ["R", "-e", "shiny::runApp('/app', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"] 
+CMD ["R", "-e", "shiny::runApp('/srv/shiny-server/', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"]
