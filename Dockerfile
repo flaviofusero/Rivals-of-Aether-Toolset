@@ -17,7 +17,7 @@ COPY Rivals_of_Aether_Toolset.Rproj /srv/shiny-server/
 COPY app.R /srv/shiny-server/
 COPY server.R /srv/shiny-server/
 COPY ui.R /srv/shiny-server/
-COPY /renv.lock srv/shiny-server/
+COPY renv.lock srv/shiny-server/
 
 COPY renv srv/shiny-server/renv
 COPY R /srv/shiny-server/R/
@@ -27,6 +27,7 @@ COPY cpp /srv/shiny-server/cpp/
 COPY js /srv/shiny-server/js/
 
 RUN Rscript -e 'install.packages("renv")'
+RUN Rscript -e 'renv::consent(provided = TRUE)'
 RUN Rscript -e 'renv::restore()'
 
 # remove install files                       
