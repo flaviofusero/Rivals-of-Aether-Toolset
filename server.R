@@ -46,7 +46,19 @@ server = function(input, output, session) {
   # Reactive values --------------------
   
   stage_elements <- reactive({ make_stage_elements(input$stage) }) %>% bindCache(input$stage)
-  stage_canvas <- reactive({ draw_stage(stage_elements()) }) %>% bindCache(input$stage)
+  
+  # We bind the canvas to the input$stage, since we only want to redraw a new canvas when the stage changes
+  stage_canvas <- reactive({ draw_stage(stage_elements(),
+                                        traj = list(x0 = x0(), 
+                                                    x_in = x[['DI in']](),
+                                                    x_custom = x[['Custom DI']](),
+                                                    x_out =  x[['DI out']](),
+                                                    y0 = y0(), 
+                                                    y_in = y[['DI in']](),
+                                                    y_custom = y[['Custom DI']](),
+                                                    y_out =  y[['DI out']]())
+  )
+  }) %>% bindEvent(input$stage)
   
   snap_to_element <- reactive({ snap_to(elements = stage_elements()[-1], 
                                         x = input$clickposition[1],
@@ -180,11 +192,11 @@ server = function(input, output, session) {
   # x, y and plot --------------------
   x <- reactiveValues()
   x[['DI out']] = reactive({
-    make_x(t_max = t_max(),
-           scaling_factor = scaling_factor,
-           v0x = v0() * cos(angles()['DI out']),
-           drift = drift(),
-           air_friction = air_friction())
+    nvl(make_x(t_max = t_max(),
+               scaling_factor = scaling_factor,
+               v0x = v0() * cos(angles()['DI out']),
+               drift = drift(),
+               air_friction = air_friction()), rep(center_w, t_max()))
   }) %>% 
     bindCache(input$hitbox,
               input$char_victim,
@@ -195,11 +207,11 @@ server = function(input, output, session) {
               input$drift)
   
   x[['Custom DI']] = reactive({
-    make_x(t_max = t_max(),
-           scaling_factor = scaling_factor,
-           v0x = v0() * cos(angles()['Custom DI']),
-           drift = drift(),
-           air_friction = air_friction())
+    nvl(make_x(t_max = t_max(),
+               scaling_factor = scaling_factor,
+               v0x = v0() * cos(angles()['Custom DI']),
+               drift = drift(),
+               air_friction = air_friction()), rep(center_w, t_max()))
   }) %>% 
     bindCache(input$hitbox,
               input$char_victim,
@@ -210,11 +222,11 @@ server = function(input, output, session) {
               input$drift)
   
   x[['DI in']] = reactive({
-    make_x(t_max = t_max(),
-           scaling_factor = scaling_factor,
-           v0x = v0() * cos(angles()['DI in']),
-           drift = drift(),
-           air_friction = air_friction())
+    nvl(make_x(t_max = t_max(),
+               scaling_factor = scaling_factor,
+               v0x = v0() * cos(angles()['DI in']),
+               drift = drift(),
+               air_friction = air_friction()), rep(center_w, t_max()))
   }) %>% 
     bindCache(input$hitbox,
               input$char_victim,
@@ -228,10 +240,10 @@ server = function(input, output, session) {
   y <- reactiveValues()
   
   y[['DI out']] = reactive({
-    make_y(t_max = t_max(),
-           scaling_factor = scaling_factor,
-           v0y = v0() * sin(angles()['DI out']),
-           g = g())
+    nvl(make_y(t_max = t_max(),
+               scaling_factor = scaling_factor,
+               v0y = v0() * sin(angles()['DI out']),
+               g = g()), rep(center_h, t_max()))
   }) %>% 
     bindCache(input$hitbox,
               input$char_victim,
@@ -242,10 +254,10 @@ server = function(input, output, session) {
               input$drift)
   
   y[['Custom DI']] = reactive({
-    make_y(t_max = t_max(),
-           scaling_factor = scaling_factor,
-           v0y = v0() * sin(angles()['Custom DI']),
-           g = g())
+    nvl(make_y(t_max = t_max(),
+               scaling_factor = scaling_factor,
+               v0y = v0() * sin(angles()['Custom DI']),
+               g = g()), rep(center_h, t_max()))
   }) %>% 
     bindCache(input$hitbox,
               input$char_victim,
@@ -256,10 +268,10 @@ server = function(input, output, session) {
               input$drift)
   
   y[['DI in']] = reactive({
-    make_y(t_max = t_max(),
-           scaling_factor = scaling_factor,
-           v0y = v0() * sin(angles()['DI in']),
-           g = g())
+    nvl(make_y(t_max = t_max(),
+               scaling_factor = scaling_factor,
+               v0y = v0() * sin(angles()['DI in']),
+               g = g()), rep(center_h, t_max()))
   }) %>% 
     bindCache(input$hitbox,
               input$char_victim,
@@ -276,16 +288,17 @@ server = function(input, output, session) {
       "restyle",
       list(
         x = list(
-          x0() + x[['DI out']](),
+          x0() + x[['DI in']](),
           x0() + x[['Custom DI']](),
-          x0() + x[['DI in']]()
+          x0() + x[['DI out']]()
         ), 
-        # text = rep(paste0('<br>Frame: ', 0:t_max()), 3),
         y = list(
-          y0() + y[['DI out']](),
+          y0() + y[['DI in']](),
           y0() + y[['Custom DI']](),
-          y0() + y[['DI in']]()
-        )
+          y0() + y[['DI out']]()
+        ),
+        customdata = list(as.list(0:t_max())),
+        hovertemplate = list(paste0('(%{x:.0f}, %{y:.0f})<br>Frame: %{customdata}'))
       ),
       c(1, 2, 3)
     )

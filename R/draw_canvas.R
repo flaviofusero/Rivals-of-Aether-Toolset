@@ -1,4 +1,4 @@
-draw_stage <- function(stage_elements) {
+draw_stage <- function(stage_elements, traj) {
   
   m <- list(
     l = 0,
@@ -8,24 +8,31 @@ draw_stage <- function(stage_elements) {
     pad = 0
   )
   
-  # p <- plotly_empty(
   p <- plot_ly(
     type = 'scatter',
     mode = 'markers',
-    # x = x_default, 
-    # y = y_default,
     # name = 'Custom DI',
     # customdata = t,
-    hovertemplate = paste0('(%{x:.0f}, %{y:.0f}<extra></extra>)'
-                           # '<br><b>Frame</b>: %{customdata[0]}',
-                           # '<br><b>Drift</b>: %{customdata[2]}'
-    )) %>% 
-    add_trace(x = x_default_in, y = y_default_in, name = 'DI in', text = paste0('<br>Frame: ', 0:(length(x_default_in) - 1)),
-              hovertemplate = paste0('(%{x:.0f}, %{y:.0f}) %{text}')) %>% 
-    add_trace(x = x_default_custom, y = y_default_custom, name = 'Custom DI', text = paste0('<br>Frame: ', 0:(length(x_default_custom) - 1)),
-              hovertemplate = paste0('(%{x:.0f}, %{y:.0f}) %{text}')) %>% 
-    add_trace(x = x_default_out, y = y_default_out, name = 'DI out', text = paste0('<br>Frame: ', 0:(length(x_default_out) - 1)),
-              hovertemplate = paste0('(%{x:.0f}, %{y:.0f}) %{text}')) %>%
+    # hovertemplate = paste0('(%{x:.0f}, %{y:.0f}<extra></extra>)')
+  ) %>% 
+    add_trace(x = traj[['x0']] + traj[['x_in']], 
+              y = traj[['y0']] + traj[['y_in']], 
+              name = 'DI in', 
+              marker = list(color = '#009E73'),
+              customdata = as.list(0:(length(traj[['x_in']])-1)),
+              hovertemplate = paste0('(%{x:.0f}, %{y:.0f})<br>Frame: %{customdata}')) %>% 
+    add_trace(x = traj[['x0']] + traj[['x_custom']], 
+              y = traj[['y0']] + traj[['y_custom']], 
+              name = 'Custom DI', 
+              marker = list(color = '#56B4E9'),
+              customdata = as.list(0:(length(traj[['x_custom']])-1)),
+              hovertemplate = paste0('(%{x:.0f}, %{y:.0f})<br>Frame: %{customdata}')) %>% 
+    add_trace(x = traj[['x0']] + traj[['x_out']], 
+              y = traj[['y0']] + traj[['y_out']], 
+              name = 'DI out', 
+              marker = list(color = '#E69F00'),
+              customdata = as.list(0:(length(traj[['x_out']])-1)),
+              hovertemplate = paste0('(%{x:.0f}, %{y:.0f})<br>Frame: %{customdata}')) %>% 
     layout(shapes = stage_elements,
            xaxis = list(title = '',
                         range = xrange,
@@ -47,7 +54,6 @@ draw_stage <- function(stage_elements) {
     ) %>% 
     config(displayModeBar = FALSE) %>% 
     onRender(click_anywhere, data = "clickposition")
-  
   
   # p$x$layout$margin$l <- p$x$layout$margin$r <- p$x$layout$margin$b <- p$x$layout$margin$t <- p$x$layout$margin$pad <- 0
   
