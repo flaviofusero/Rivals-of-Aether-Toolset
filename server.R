@@ -433,7 +433,7 @@ server = function(input, output, session) {
   # Characters stats -------------------
   
   output$table <- renderDT(
-    datatable(get(input$char)[, -'selected_hitboxes'],
+    datatable(get(input$char)[, -'Moves'],
               filter = 'top', extensions = c('Buttons', 'Scroller', 'FixedColumns'),
               options = list(scrollY = 650,
                              scrollX = 500,
@@ -458,6 +458,7 @@ server = function(input, output, session) {
     
     x <- glue({'
     <p>Tool by Vincent46</p>
+    <p>Kill % may be +/- 1% off due to rounding</p>
     <br>
     <p>Input data taken from the following resources (not by me):</p>
     <p><a href="{fd}">Rivals of Aether Academy Frame Data</a></p>

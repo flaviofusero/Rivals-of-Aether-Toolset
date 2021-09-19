@@ -11,7 +11,7 @@ library(Rcpp)
 library(htmlwidgets)
 library(DT)
 
-header <- dashboardHeader(title = 'RoA KB Calculator', 
+header <- dashboardHeader(title = 'RoA Toolset', 
                           titleWidth = 350)
 
 sidebar <- dashboardSidebar(
@@ -119,12 +119,6 @@ sidebar <- dashboardSidebar(
   ),
   
   div(style = "margin-top:-15px"),
-  
-  # fluidRow(
-  #   style = "padding-left:50px",
-  #   uiOutput(outputId = "infocircle")
-  # ),
-  
   div(style = "margin-top:-15px"),
   
   fluidRow(
@@ -161,8 +155,8 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
   navbarPage( 
-    title = 'Rivals of Aether Knockback Calculator',
-    tabPanel('Calculator',
+    title = 'Rivals of Aether Toolset',
+    tabPanel('Knockback',
              
              # tags$head(tags$style(HTML('
              #  .box-body {
@@ -221,48 +215,24 @@ body <- dashboardBody(
                       )
                )
              )
-             
-             ###
-             # fluidRow(
-             #   box(width = 12,
-             #       align = 'left',
-             #       column(width = 12,
-             #              align = 'left',
-             #              plotlyOutput(outputId = "plot" ,
-             #                           width = '100%', 
-             #                           height = 700,
-             #              )
-             #       )
-             #       ),
-             #       
-             #       fluidRow(
-             #              align = 'center',
-             #              br(),
-             #              fluidRow(
-             #                uiOutput(outputId = "image")
-             #              ),
-             #              fluidRow(
-             #                h3(htmlOutput('move_kills')),
-             #                br(),
-             #                h4(textOutput('angle_text')),
-             #                h4(textOutput('velocity_text')),
-             #                h4(textOutput('hitstun_text')),
-             #                h4(textOutput('DI_in_text')),
-             #                h4(textOutput('DI_out_text')),
-             #                h4(textOutput('grounded_text'))
-             #              )
-             #   )
-             # )
-             # ###
-             
     ),
     
     tabPanel('Character stats',
              DTOutput('table')
     ),
     
-    tabPanel('Credits',
-             htmlOutput('credits')
+    tabPanel('About & Feedback',
+             fluidRow(htmlOutput('credits')),
+             fluidRow(column(6,
+                             offset = 3,
+                             align= 'center',
+                             br(),
+               tags$iframe(src = 'https://forms.gle/6mRDH1QQyTEYwUxV7',
+                                  width = '100%',
+                                  height = 600,
+                                  frameborder = 0,
+                                  marginheight = 0)
+             ))
     )
   )
 )

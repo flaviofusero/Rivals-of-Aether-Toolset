@@ -1,3 +1,8 @@
-Re-add DI in / out with colors
-introduce things like spikes while onstage
-metti nudelliana
+- Change "Reverse hit" to be a less ambiguous name
+- Wtf is Treetop Lodge (D)?
+- Angle flipper in the output?
+- Swap DI in and out for angles between 270 and 360
+
+
+- Spikes on stage
+- Naked elliana
