@@ -19,10 +19,10 @@ sidebar <- dashboardSidebar(
   
   useShinyjs(),
   
-  selectizeInput('char',
-                 label = 'Attacker',
-                 choices = chars,
-                 selected = 'Zetterburn'),
+  selectInput('char',
+              label = 'Attacker',
+              choices = chars,
+              selected = 'Zetterburn'),
   
   div(style = "margin-top:-15px"),
   
@@ -55,12 +55,12 @@ sidebar <- dashboardSidebar(
     )
   ),
   
-  selectizeInput('hitbox',
-                 label = 'Hitbox',
-                 choices = c('Fair (Sweetspot)' = 'Zetterburn_Fair (Sweetspot)', 
-                             'Fair' = 'Zetterburn_Fair', 
-                             'Fair (Sour)' = 'Zetterburn_Fair (Sour)'),
-                 multiple = FALSE),
+  selectInput('hitbox',
+              label = 'Hitbox',
+              choices = c('Fair (Sweetspot)' = 'Zetterburn_Fair (Sweetspot)', 
+                          'Fair' = 'Zetterburn_Fair', 
+                          'Fair (Sour)' = 'Zetterburn_Fair (Sour)'),
+              multiple = FALSE),
   
   div(style = "margin-top:-15px"),
   
@@ -227,11 +227,11 @@ body <- dashboardBody(
                              offset = 3,
                              align= 'center',
                              br(),
-               tags$iframe(src = 'https://forms.gle/6mRDH1QQyTEYwUxV7',
-                                  width = '100%',
-                                  height = 600,
-                                  frameborder = 0,
-                                  marginheight = 0)
+                             tags$iframe(src = 'https://forms.gle/6mRDH1QQyTEYwUxV7',
+                                         width = '100%',
+                                         height = 600,
+                                         frameborder = 0,
+                                         marginheight = 0)
              ))
     )
   )

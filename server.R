@@ -30,7 +30,7 @@ server = function(input, output, session) {
   })
   
   observe({
-    updateSelectizeInput(
+    updateSelectInput(
       inputId = 'hitbox',
       choices = paste0(input$char,
                        '_',
