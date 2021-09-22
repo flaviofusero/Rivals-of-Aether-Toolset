@@ -78,3 +78,9 @@ parse_angle <- function(move, is_grounded) {
     if (is_grounded == TRUE) 40 else 45
   } else { nvl(move[,Angle], 0) }
 }
+
+
+short_arc_between <- function(angle_1, angle_2) {
+  abs(angle_1 - angle_2 + 180 + 360) %% 360 - 180
+}
+

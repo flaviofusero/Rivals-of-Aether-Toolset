@@ -143,7 +143,7 @@ sidebar <- dashboardSidebar(
                      label = 'DI angle',
                      value = 40,
                      max = 360,
-                     step = 5,
+                     step = 1,
                      angleOffset = 90,
                      rotation = 'anticlockwise',
                      width = '100%',

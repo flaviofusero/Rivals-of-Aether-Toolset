@@ -17,6 +17,7 @@ server = function(input, output, session) {
   sourceCpp('cpp/utils.cpp')
   source('R/utils.R')
   source('R/make_stage_elements.R')
+  source('R/assist_di.R')
   source('R/constants.R')
   source('server.R')
   source('ui.R')
@@ -104,16 +105,20 @@ server = function(input, output, session) {
   
   angles <- reactive({
     angle <- parsed_angle()
-    if (between(angle, 90, 270)) {angle <- 180 - angle}
+    if (between(angle, 90, 270)) {angle <- (180 - angle) %% 360}
     
     DI_offsets = 18 * c('DI out' = -1, 
-                        'Custom DI' = ifelse(input$No_DI, 0, sin((pi / 180) * (input$DI - angle))), 
+                        'Custom DI' = ifelse(input$No_DI, 0, assist_di(angle, input$DI, v0())), 
                         'DI in' = 1)
     
     angles = angle + DI_offsets %>% 
       setNames(c('DI out', 'Custom DI', 'DI in'))
     
-    if (input$reverse_hit) {angles <- 180 - angles}
+    if (input$reverse_hit) {angles <- (180 - angles) %% 360}
+    print(DI_offsets[2])
+    print(angle)
+    print(input$DI)
+    print(v0())
     
     return((pi / 180) * angles)
   }) %>%
@@ -367,12 +372,7 @@ server = function(input, output, session) {
   output$DI_out_text <- renderText({
     validate(need(BKB() != 0, ''))
     paste0('Maximum DI out angle: ', 
-           (ifelse(between(round(parsed_angle() %% 360), 
-                           90,
-                           270
-           ), 
-           180 - round(parsed_angle()),
-           round(parsed_angle())
+           (ifelse(between(round(parsed_angle() %% 360), 90, 270), 180 - round(parsed_angle()), round(parsed_angle())
            ) - 90) %% 360,
            "°")
   })
@@ -461,8 +461,8 @@ server = function(input, output, session) {
     <p>Kill % may be +/- 1% off due to rounding</p>
     <br>
     <p>Input data taken from the following resources (not by me):</p>
-    <p><a href="{fd}">Rivals of Aether Academy Frame Data</a></p>
-    <p><a href="{fd}">Rivals of Aether General Stats</a></p>
+    <p><a href="{fd}">Rivals of Aether Academy Frame Data</a> - Data extracted manually in-game and from dev-mode files by SNC. Extra information provided by Menace13 and Youngblood. General Stats created by Kisuno. Collated Patch Notes created by SNC</p>
+    <p><a href="{fd}">Rivals of Aether General Stats</a> - Data extracted from devmode files and formatted by Kisuno. Info provided by Menace13, Youngblood and SNC</p>
     <p>Thanks to IGL for answering my questions about knockback formulas, directly on Sector 7-G\'s discord and indirectly via his 
     <a href="{igl_tool}">Knockback Visualizer tool</a></p>
     '})
