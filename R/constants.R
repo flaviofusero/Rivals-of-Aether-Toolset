@@ -14,9 +14,25 @@ library(DT)
 source('R/utils.R')
 
 chars <-  c('Absa', 'Clairen', 'Etalus', 'Elliana', 'Forsburn', 'Kragg', 'Maypul', 'Orcane', 'Ori', 'Ranno',
-          'Shovel Knight', 'Sylvanos', 'Wrastor', 'Zetterburn')
+            'Shovel Knight', 'Sylvanos', 'Wrastor', 'Zetterburn')
 
 chars_victim <- c(chars, 'Etalus (armor)') %>% sort
+
+icons <- sapply(chars, function(x) {glue(
+  "<img src='Icons/{x}.png' width=25px></img>"
+)}
+)
+
+icons_victims <- sapply(chars_victim, function(x) {glue(
+  "<img src='Icons/{x}.png' width=25px></img>"
+)}
+)
+
+icons_chars <- as.data.table(cbind(icons, chars))[, paste0(icons, '&nbsp;&nbsp;', chars)]
+icons_chars_victim <- as.data.table(cbind(icons_victims, chars_victim))[, paste0(icons_victims, '&nbsp;&nbsp;', chars_victim)]
+
+# Moves with omnidirectional knockback angle
+omni_moves <- c('Zetterburn_nspecial', 'Zetterburn_uspecial', 'Forsburn_dspecial', 'Forsburn_fspecial', 'Ori_nspecial')
 
 scaling_factor <- 1
 
@@ -92,10 +108,10 @@ yrange = list(-(max_bz_bottom + buffer_h / 2), max_bz_top + buffer_h)
 # Corresponding to default x, y for zet fair at default inputs
 # Used for the initial plot
 x_default_custom = center_w + c(0.00000,13.91903,27.79806,41.63708,55.43611,69.19514,82.91417,96.59319,110.23222,123.83125,137.39028,150.90930,164.38833,
-                            177.82736,191.22639,204.58541,217.90444,231.18347,244.42250,257.62152,270.78055,283.89958,296.97861,310.01763,323.01666,335.97569,
-                            348.89472,361.77374,374.61277,387.41180,400.17083,412.88985,425.56888,438.20791,450.80694,463.36596,475.88499,488.36402,500.80305,
-                            513.20207,525.56110,537.88013,550.15916,562.39818,574.59721,586.75624,598.87527,610.95429,622.99332,634.99235,646.95138,658.87040,
-                            670.74943,682.58846,694.38749,706.14651,717.86554,729.54457,741.18360)
+                                177.82736,191.22639,204.58541,217.90444,231.18347,244.42250,257.62152,270.78055,283.89958,296.97861,310.01763,323.01666,335.97569,
+                                348.89472,361.77374,374.61277,387.41180,400.17083,412.88985,425.56888,438.20791,450.80694,463.36596,475.88499,488.36402,500.80305,
+                                513.20207,525.56110,537.88013,550.15916,562.39818,574.59721,586.75624,598.87527,610.95429,622.99332,634.99235,646.95138,658.87040,
+                                670.74943,682.58846,694.38749,706.14651,717.86554,729.54457,741.18360)
 x_default_in = center_w + c(0.000000,9.628633,19.217266,28.765899,38.274532,47.743165,57.171798,66.560431,75.909064,85.217697,94.486330,103.714963,
                             112.903596,122.052229,131.160862,140.229495,149.258128,158.246762,167.195395,176.104028,184.972661,193.801294,202.589927,211.338560,
                             220.047193,228.715826,237.344459,245.933092,254.481725,262.990358,271.458991,279.887624,288.276257,296.624890,304.933523,313.202156,

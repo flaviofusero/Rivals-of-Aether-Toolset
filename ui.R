@@ -19,10 +19,13 @@ sidebar <- dashboardSidebar(
   
   useShinyjs(),
   
-  selectInput('char',
+  pickerInput('char',
               label = 'Attacker',
               choices = chars,
-              selected = 'Zetterburn'),
+              selected = 'Zetterburn',
+              choicesOpt = list(content = icons_chars,
+                                style = rep(("padding-left: 10px; color: black; background: lightgrey;"), length(chars)))
+  ),
   
   div(style = "margin-top:-15px"),
   
@@ -64,10 +67,12 @@ sidebar <- dashboardSidebar(
   
   div(style = "margin-top:-15px"),
   
-  selectizeInput('char_victim',
-                 label = 'Victim',
-                 choices = chars_victim,
-                 selected = 'Zetterburn'),
+  pickerInput('char_victim',
+              label = 'Victim',
+              choices = chars_victim,
+              selected = 'Zetterburn',
+              choicesOpt = list(content = icons_chars_victim,
+                                style = rep(("padding-left: 10px; color: black; background: lightgrey;"), length(chars_victim)))),
   
   div(style = "margin-top:-15px"),
   
@@ -124,7 +129,7 @@ sidebar <- dashboardSidebar(
   fluidRow(
     column(6,
            align = 'center',
-           style='padding-left:15px;',
+           style='padding-left:20px; padding-right: 0px; margin-top: -10px;',
            knobInput('damage',
                      label = '% (pre-hit)',
                      value = 100,
@@ -133,12 +138,11 @@ sidebar <- dashboardSidebar(
                      angleOffset = 90,
                      rotation = 'anticlockwise',
                      post = '%',
-                     width = '100%',
-                     height = '100%')
+                     width = '100%')
     ),
     column(6,
            align = 'center',
-           style='padding-right:15px;',
+           style='padding-right:20px; padding-left: 0px; margin-top: -10px;',
            knobInput('DI',
                      label = 'DI angle',
                      value = 40,
@@ -146,10 +150,20 @@ sidebar <- dashboardSidebar(
                      step = 1,
                      angleOffset = 90,
                      rotation = 'anticlockwise',
-                     width = '100%',
-                     height = '100%')
+                     width = '100%')
     )
     
+  ),
+  fluidRow(
+    column(12,
+           style = 'margin-top: -15px;',
+           hidden(numericInput('omni_angle',
+                        label = 'Override attack angle (0 <= x < 360)',
+                        value = 45,
+                        min = 0,
+                        max = 360,
+                        step = 1))
+    )
   )
 )
 
@@ -170,13 +184,18 @@ body <- dashboardBody(
              #                           
              #                           '))),
              
-             fluidRow(selectizeInput('stage',
+             fluidRow(
+               column(12,
+                      style='padding-left:0px;',
+                      selectizeInput('stage',
                                      label = NULL,
                                      choices = names(stages) %>% sort)
+               )
              ),
              
              fluidRow(
                column(width = 9,
+                      style='margin-left: -28px;',
                       align = 'left',
                       box(width = 12,
                           align = 'center',

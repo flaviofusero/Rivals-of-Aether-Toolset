@@ -1,14 +1,10 @@
-- DI assist
-- Change "Reverse hit" to be a less ambiguous name
-- Wtf is Treetop Lodge (D)?
+- Multidirectional hitboxes like shine
+- Numbers get sorted by text. I should split that
+- Tool to visualize all blastzones, like https://tournameta.com/stage-comparison
+- Put image on stages instaed of only lines
 - Angle flipper in the output?
 - Swap DI in and out for angles between 270 and 360
 - Spikes on stage
 - Naked elliana
-
-- You should ask IGL or SNC to look over the tool and see if stuff can be improved, they probably wouldn't mind taking a quick look and they are the experts when it comes to helpful Rivals resources. SNC is also the person who created and maintains the frame data and general stats sheets for Rivals so you should credit him.
-
-DI that is 22 degrees higher or lower than perpendicular, 90 degrees compared to launch angle, gives you max DI influence (changes launch angle by 18 degrees).
-E.g. for a 40 degree move maximum DI in angle would be 108-152 degrees. I'm not sure if it works the same way with DI out, but IGL or SNC probably know.
-The longer notes in the character stats section are hard to read since they are on merely a single line.
-When sorting by startup or active frames it sorts them as strings of letters rather than as numbers
+- The longer notes in the character stats section are hard to read since they are on merely a single line.
+- When sorting by startup or active frames it sorts them as strings of letters rather than as numbers

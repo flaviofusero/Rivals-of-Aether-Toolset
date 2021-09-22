@@ -44,6 +44,10 @@ server = function(input, output, session) {
     toggle('DI', condition = !input$No_DI)
   })
   
+  observe({
+    toggle('omni_angle', condition = (paste0(input$char, '_', input$tabs) %in% omni_moves))
+  })
+  
   # Reactive values --------------------
   
   stage_elements <- reactive({ make_stage_elements(input$stage) }) %>% bindCache(input$stage)
@@ -106,6 +110,7 @@ server = function(input, output, session) {
   angles <- reactive({
     angle <- parsed_angle()
     if (between(angle, 90, 270)) {angle <- (180 - angle) %% 360}
+    if (paste0(input$char, '_', input$tabs) %in% omni_moves) {angle <- nvl(input$omni_angle, 0)}
     
     DI_offsets = 18 * c('DI out' = -1, 
                         'Custom DI' = ifelse(input$No_DI, 0, assist_di(angle, input$DI, v0())), 
@@ -121,6 +126,7 @@ server = function(input, output, session) {
               input$clickposition,
               input$stage,
               input$char,
+              input$omni_angle,
               input$hitbox,
               input$No_DI,
               input$DI,
@@ -203,6 +209,7 @@ server = function(input, output, session) {
               input$damage,
               input$No_DI,
               input$DI,
+              input$omni_angle,
               input$reverse_hit,
               input$drift)
   
@@ -218,6 +225,7 @@ server = function(input, output, session) {
               input$damage,
               input$No_DI,
               input$DI,
+              input$omni_angle,
               input$reverse_hit,
               input$drift)
   
@@ -233,6 +241,7 @@ server = function(input, output, session) {
               input$damage,
               input$No_DI,
               input$DI,
+              input$omni_angle,
               input$reverse_hit,
               input$drift)
   
@@ -250,6 +259,7 @@ server = function(input, output, session) {
               input$damage,
               input$No_DI,
               input$DI,
+              input$omni_angle,
               input$reverse_hit,
               input$drift)
   
@@ -264,6 +274,7 @@ server = function(input, output, session) {
               input$damage,
               input$No_DI,
               input$DI,
+              input$omni_angle,
               input$reverse_hit,
               input$drift)
   
@@ -278,6 +289,7 @@ server = function(input, output, session) {
               input$damage,
               input$No_DI,
               input$DI,
+              input$omni_angle,
               input$reverse_hit,
               input$drift)
   
