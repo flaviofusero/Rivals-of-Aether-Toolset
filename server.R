@@ -115,11 +115,6 @@ server = function(input, output, session) {
       setNames(c('DI out', 'Custom DI', 'DI in'))
     
     if (input$reverse_hit) {angles <- (180 - angles) %% 360}
-    print(DI_offsets[2])
-    print(angle)
-    print(input$DI)
-    print(v0())
-    
     return((pi / 180) * angles)
   }) %>%
     bindCache(input$autosnap,
@@ -320,7 +315,6 @@ server = function(input, output, session) {
   })
   
   output$selected_hitbox_kills <- renderText({
-    
     if (min(x0() + x[['Custom DI']]()) < center_w - stages[[input$stage]][['ground']] - stages[[input$stage]][['side']] |
         max(x0() + x[['Custom DI']]()) > center_w + stages[[input$stage]][['ground']] + stages[[input$stage]][['side']] |
         min(y0() + y[['Custom DI']]()) < center_h - stages[[input$stage]][['bottom']]  |

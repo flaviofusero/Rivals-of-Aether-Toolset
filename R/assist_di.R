@@ -13,9 +13,9 @@ assist_di <- function(angle, DI, v0) {
       abs(short_arc_between(DI, 0)) <= 22) { # TODO: is 22 degress from 0 the correct threshold for full DI out on weak moves?
     return(-1)     
   } else if (abs(short_arc_between(DI, angle + 90)) <= 22) {
-    return(-1)
-  } else if (abs(short_arc_between(DI, angle - 90)) <= 22) {
     return(+1)
+  } else if (abs(short_arc_between(DI, angle - 90)) <= 22) {
+    return(-1)
   } else { 
     return(sin((pi / 180) * (DI - angle)))
   }
