@@ -66,8 +66,8 @@ server = function(input, output, session) {
   }) %>% bindEvent(input$stage)
   
   snap_to_element <- reactive({ snap_to(elements = stage_elements()[-1], 
-                                        x = input$clickposition[1],
-                                        y = input$clickposition[2],
+                                        x = nvl(input$clickposition[1], 0),
+                                        y = nvl(input$clickposition[2], 0),
                                         snap_tol = snap_tol)
   }) %>% bindCache(input$stage, input$clickposition)
   
@@ -100,16 +100,18 @@ server = function(input, output, session) {
   KBS <- reactive({ nvl(selected_hitbox()$Knockback.Scaling, 0) }) 
   hitbox_damage <- reactive({ nvl(selected_hitbox()$Damage, 0) }) 
   
-  parsed_angle <- reactive ({ 
-    parse_angle(selected_hitbox(), is_grounded()) 
+  normalized_angle <- reactive ({ 
+    normalize_angle(selected_hitbox(), is_grounded()) 
   }) %>% bindCache(input$hitbox,
                    input$autosnap,
                    input$clickposition,
                    input$stage)
   
   angles <- reactive({
-    angle <- parsed_angle()
-    if (between(angle, 90, 270)) {angle <- (180 - angle) %% 360}
+    angle <- normalized_angle()
+    if (input$reverse_hit) {angle <- (180 - angle) %% 360}
+    
+    # Omnidirectional moves have their angle overridden by manual inputs
     if (paste0(input$char, '_', input$tabs) %in% omni_moves) {angle <- nvl(input$omni_angle, 0)}
     
     DI_offsets = 18 * c('DI out' = -1, 
@@ -117,9 +119,14 @@ server = function(input, output, session) {
                         'DI in' = 1)
     
     angles = angle + DI_offsets %>% 
-      setNames(c('DI out', 'Custom DI', 'DI in'))
+      setNames(
+        if (input$reverse_hit) {
+          c('DI in', 'Custom DI', 'DI out')
+        } else {
+          c('DI out', 'Custom DI', 'DI in')
+        }
+      )
     
-    if (input$reverse_hit) {angles <- (180 - angles) %% 360}
     return((pi / 180) * angles)
   }) %>%
     bindCache(input$autosnap,
@@ -340,14 +347,7 @@ server = function(input, output, session) {
   output$angle_text <- renderText({
     validate(need(BKB() != 0, ''))
     paste0('Launch angle: ', 
-           ifelse(between(round(parsed_angle() %% 360), 
-                          90,
-                          270
-           ), 
-           180 - round(parsed_angle()),
-           round(parsed_angle())
-           )
-           %% 360, "°")
+           ifelse(input$reverse_hit, (180 - normalized_angle()) %% 360, normalized_angle()), "°")
   }) 
   
   output$velocity_text <- renderText({
@@ -365,21 +365,14 @@ server = function(input, output, session) {
   output$DI_in_text <- renderText({
     validate(need(BKB() != 0, ''))
     paste0('Maximum DI in angle: ', 
-           ifelse(between(round(parsed_angle() %% 360), 
-                          90,
-                          270
-           ), 
-           180 - round(parsed_angle()),
-           round(parsed_angle())
-           ) + 90,
+           ifelse(input$reverse_hit, 180 - normalized_angle() - 90, normalized_angle() + 90) %% 360,
            "°")
   })
   
   output$DI_out_text <- renderText({
     validate(need(BKB() != 0, ''))
     paste0('Maximum DI out angle: ', 
-           (ifelse(between(round(parsed_angle() %% 360), 90, 270), 180 - round(parsed_angle()), round(parsed_angle())
-           ) - 90) %% 360,
+           ifelse(input$reverse_hit, 180 - normalized_angle() + 90, normalized_angle() - 90) %% 360,
            "°")
   })
   
@@ -425,14 +418,26 @@ server = function(input, output, session) {
   
   output$move_data <- renderDT({
     cols <- c('Ground.Moves', 'Startup', 'Active.Frames', 'Endlag.(Hit)', 'Endlag.(Whiff)', 'FAF', 'Damage', 'Landing.Lag.(Hit)',
-              'Landing.Lag.(Whiff)', 'Cooldown')
+              'Landing.Lag.(Whiff)', 'Cooldown', 'Angle.Flipper', 'AF.Description')
     
     move_data <- char_moves()[Ground.Moves %in% selectable_hitboxes(), intersect(cols, colnames(char_moves())), with = F]
     move_data <- move_data[, colSums(is.na(move_data)) < nrow(move_data), with = FALSE] # Returns only column with at least one non-NA value
     untidy_cols <- colnames(move_data)
     tidy_cols <- gsub('.', ' ', gsub('Ground.Moves', 'Move', untidy_cols,  fixed = T), fixed = T)
     setnames(move_data, old = untidy_cols, new = tidy_cols)
-    datatable(move_data, options = list(dom = 't', paging = FALSE, ordering = FALSE))
+    datatable(move_data, 
+              plugins = 'ellipsis',
+              options = list(dom = 't', 
+                             paging = FALSE, 
+                             ordering = FALSE,
+                             columnDefs = list(
+                               list(
+                                 targets = -1,
+                                 render = JS("$.fn.dataTable.render.ellipsis( 17, false )")
+                               )
+                             )
+              )
+    )
   })
   
   
@@ -440,19 +445,35 @@ server = function(input, output, session) {
   
   output$table <- renderDT(
     datatable(get(input$char)[, -'Moves'],
-              filter = 'top', extensions = c('Buttons', 'Scroller', 'FixedColumns'),
+              caption = 'Hover over a cell to see its content',
+              filter = 'top',
+              extensions = c('Buttons', 'Scroller', 'FixedColumns'),
+              plugins = c('ellipsis', 'natural'),
               options = list(scrollY = 650,
-                             scrollX = 500,
+                             scrollX = TRUE, #500,
                              deferRender = TRUE,
                              scroller = TRUE,
-                             # paging = TRUE,
-                             # pageLength = 25,
                              buttons = list(list(extend = 'colvis', targets = 0, visible = FALSE)),
                              dom = 'lBfrtip',
+                             order = list(1, 'asc'),
                              fixedColumns = list(leftColumns = 2),
-                             autoWidth = TRUE
+                             # autoWidth = TRUE,
+                             columnDefs = list(
+                               list(
+                                 targets = 2:(ncol(get(input$char)[, -'Moves'])-1),
+                                 render = JS("$.fn.dataTable.render.ellipsis( 17, false )")
+                               ),
+                               list(
+                                 targets = -1,
+                                 render = JS("$.fn.dataTable.render.ellipsis( 51, false )")
+                               ),
+                               list( # Does not work server side
+                                 type = "natural",
+                                 targets = "_all")
+                             )
               )
-    )
+    ),
+    server = TRUE # Note that natural sorting does not work server side :( 
   )
   
   # Credits -------------------

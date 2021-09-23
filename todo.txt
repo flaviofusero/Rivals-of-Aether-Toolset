@@ -1,10 +1,14 @@
-- Multidirectional hitboxes like shine
+TODO (fast)
 - Numbers get sorted by text. I should split that
+   TODO > put a "First Active Frame" column
+- Add icons which tell you how stuff works
+- Put kragg rocks inside his neutral special (i.e. modify input files)
+- Write snap_to function in c++ to make click events faster?
+
+TODO (will take time)
 - Tool to visualize all blastzones, like https://tournameta.com/stage-comparison
+
+Not sure how to implement yet:
 - Put image on stages instaed of only lines
-- Angle flipper in the output?
-- Swap DI in and out for angles between 270 and 360
 - Spikes on stage
 - Naked elliana
-- The longer notes in the character stats section are hard to read since they are on merely a single line.
-- When sorting by startup or active frames it sorts them as strings of letters rather than as numbers

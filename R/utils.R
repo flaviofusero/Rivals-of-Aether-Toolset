@@ -17,7 +17,13 @@ nvl <- function(x, y) {
   } else { x }
 }
 
-parse_char_moves_data <- function(char) {
+parse_char_moves_data <- function(char, angle_flippers) {
+  
+  col_order = c('Ground.Moves', 'Startup', 'Active.Frames', 'Endlag.(Hit)', 'Endlag.(Whiff)', 'FAF.(Whiff)', 'Damage',
+                'Angle', 'Base.Knockback', 'Knockback.Scaling', 'Angle.Flipper', 'AF.Description', 'Priority', 
+                'Hitstun.Modifier', 'Landing.Lag.(Hit)', 'Landing.Lag.(Whiff)', 'Cooldown', 'Base.Hitpause', 
+                'Hitpause.Scaling', 'Kills.Projectiles', 'Notes', 'Moves')
+  
   char_moves_data <- as.data.table(readWorkbook('input/Rivals of Aether Academy Frame Data - Updated for 2.0.7.0.xlsx',
                                                 sheet = char,
                                                 rows = 2:100))
@@ -32,13 +38,19 @@ parse_char_moves_data <- function(char) {
                   ][
                     , 'Hitstun.Modifier' := gsub('x', '', Hitstun.Modifier, fixed = TRUE)]
   
-  cols_to_num <- c('Base.Knockback', 'Knockback.Scaling', 'Angle', 'Damage', 'Hitstun.Modifier')
+  cols_to_num <- c('Base.Knockback', 'Knockback.Scaling', 'Angle', 'Damage', 'Hitstun.Modifier', 'Angle.Flipper')
   char_moves_data[ , (cols_to_num) := lapply(.SD, function(x) {
-    as.numeric(nvl(x, -1))
+    # as.numeric(nvl(x, -1))
+    as.numeric(x)
   }), .SDcols = cols_to_num] 
   char_moves_data[, Knockback.Scaling := Knockback.Scaling / 100]
   
-  return(char_moves_data)
+  char_moves_data <- merge(char_moves_data,
+                           angle_flippers,
+                           by = 'Angle.Flipper',
+                           all.x = T)
+  
+  return(char_moves_data[, ..col_order])
 }
 
 parse_char_stats <- function(chars_victim = chars_victim) {
@@ -73,10 +85,18 @@ snap_to <- function(elements, x, y, snap_tol) {
   return(snap_to)
 }
 
-parse_angle <- function(move, is_grounded) {
-  if (isTRUE(move[,Angle] == 361)) { 
+normalize_angle <- function(move, is_grounded) {
+  non_norm_angle <- if (isTRUE(move[,Angle] == 361)) { 
     if (is_grounded == TRUE) 40 else 45
   } else { nvl(move[,Angle], 0) }
+  
+  norm_angle <- if (between(non_norm_angle, 90, 270)) {
+    (180 - non_norm_angle) %% 360 
+    } else {
+      non_norm_angle
+    }
+  
+  return(norm_angle)
 }
 
 

@@ -36,8 +36,16 @@ omni_moves <- c('Zetterburn_nspecial', 'Zetterburn_uspecial', 'Forsburn_dspecial
 
 scaling_factor <- 1
 
+angle_flippers <- as.data.table(read.xlsx(
+  'input/Rivals of Aether Academy Frame Data - Updated for 2.0.7.0.xlsx', 
+  sheet = 'Angle Flippers',
+  rows = 1:12,
+  cols = 1:13))[,
+                Angle.Flipper := as.numeric(Angle.Flipper)]
+
+
 for (c in chars) {
-  assign(c, suppressWarnings(parse_char_moves_data(c)))
+  assign(c, suppressWarnings(parse_char_moves_data(c, angle_flippers)))
 }
 
 char_stats <- parse_char_stats(chars_victim = chars_victim)
