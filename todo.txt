@@ -1,5 +1,5 @@
 TODO (fast)
-- parsecharmovesdata takes significant amount of time
+- parsecharmovesdata takes significant amount of time. Read workbook only once?
 - Maybe put newlines after dots in characters' long notes
 - Add icons which tell you how stuff works
 - Numbers get sorted by text. I should split columns
@@ -15,4 +15,4 @@ NOT SURE HOW TO IMPLEMENT
 
 MAYBETOWN
 - Write snap_to function in c++ to make click events faster? (Not urgent - it's not the bottleneck on Heroku...)
-- Use Semantic UI
+- Use Semantic UI 
