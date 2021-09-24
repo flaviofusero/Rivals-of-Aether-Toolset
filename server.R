@@ -496,6 +496,6 @@ server = function(input, output, session) {
     '})
     
     HTML(x)
-  })
+  }) 
   
 }
