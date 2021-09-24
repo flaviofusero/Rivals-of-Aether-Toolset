@@ -1,14 +1,17 @@
 TODO (fast)
-- Numbers get sorted by text. I should split that
-   TODO > put a "First Active Frame" column
+- Maybe put newlines after dots in characters' long notes
 - Add icons which tell you how stuff works
-- Put kragg rocks inside his neutral special (i.e. modify input files)
-- Write snap_to function in c++ to make click events faster?
+- Numbers get sorted by text. I should split columns
+   TODO > put a "First Active Frame" column
 
 TODO (will take time)
 - Tool to visualize all blastzones, like https://tournameta.com/stage-comparison
 
-Not sure how to implement yet:
+NOT SURE HOW TO IMPLEMENT
 - Put image on stages instaed of only lines
 - Spikes on stage
 - Naked elliana
+
+MAYBETOWN
+- Write snap_to function in c++ to make click events faster? (Not urgent - it's not the bottleneck on Heroku...)
+- Use Semantic UI

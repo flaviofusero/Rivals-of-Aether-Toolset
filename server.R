@@ -36,7 +36,7 @@ server = function(input, output, session) {
       choices = paste0(input$char,
                        '_',
                        selectable_hitboxes()) %>% 
-        setNames(get_move_data(paste0(input$char, '_', input$tabs))[order(-Base.Knockback, -Knockback.Scaling), Ground.Moves])
+        setNames(get_move_data(paste0(input$char, '_', input$tabs))[order(-(Base.Knockback + 12 * Knockback.Scaling)), Ground.Moves])
     )
   })
   
@@ -85,7 +85,7 @@ server = function(input, output, session) {
   }) %>% bindCache(input$char, input$tabs)
   
   selectable_hitboxes <- reactive({
-    char_moves()[order(-Base.Knockback, -Knockback.Scaling), Ground.Moves]
+    char_moves()[order(-(Base.Knockback + 12 * Knockback.Scaling)), Ground.Moves]
   }) %>% bindCache(input$char, input$tabs)
   
   selected_hitbox <- reactive({ 
@@ -417,8 +417,8 @@ server = function(input, output, session) {
   })
   
   output$move_data <- renderDT({
-    cols <- c('Ground.Moves', 'Startup', 'Active.Frames', 'Endlag.(Hit)', 'Endlag.(Whiff)', 'FAF', 'Damage', 'Landing.Lag.(Hit)',
-              'Landing.Lag.(Whiff)', 'Cooldown', 'Angle.Flipper', 'AF.Description')
+    cols <- c('Ground.Moves', 'Startup', 'Active.Frames', 'Endlag.(Hit)', 'Endlag.(Whiff)', 'FAF.(Whiff)', 'Damage', 'Landing.Lag.(Hit)',
+              'Landing.Lag.(Whiff)', 'Cooldown', 'Base.Knockback', 'Knockback.Scaling') #, 'Angle.Flipper', 'AF.Description')
     
     move_data <- char_moves()[Ground.Moves %in% selectable_hitboxes(), intersect(cols, colnames(char_moves())), with = F]
     move_data <- move_data[, colSums(is.na(move_data)) < nrow(move_data), with = FALSE] # Returns only column with at least one non-NA value
@@ -429,13 +429,13 @@ server = function(input, output, session) {
               plugins = 'ellipsis',
               options = list(dom = 't', 
                              paging = FALSE, 
-                             ordering = FALSE,
-                             columnDefs = list(
-                               list(
-                                 targets = -1,
-                                 render = JS("$.fn.dataTable.render.ellipsis( 17, false )")
-                               )
-                             )
+                             ordering = FALSE
+                             # columnDefs = list(
+                             #   list(
+                             #     targets = -1,
+                             #     render = JS("$.fn.dataTable.render.ellipsis( 17, false )")
+                             #   )
+                             # )
               )
     )
   })
@@ -490,7 +490,8 @@ server = function(input, output, session) {
     <p>Input data taken from the following resources (not by me):</p>
     <p><a href="{fd}">Rivals of Aether Academy Frame Data</a> - Data extracted manually in-game and from dev-mode files by SNC. Extra information provided by Menace13 and Youngblood. General Stats created by Kisuno. Collated Patch Notes created by SNC</p>
     <p><a href="{fd}">Rivals of Aether General Stats</a> - Data extracted from devmode files and formatted by Kisuno. Info provided by Menace13, Youngblood and SNC</p>
-    <p>Thanks to IGL for answering my questions about knockback formulas, directly on Sector 7-G\'s discord and indirectly via his 
+    <p>Note that I made some data prep to facilitate automatic parsing. All errors in the data are my responsibility.</p>
+    <p>Big thanks to IGL for answering my questions about knockback formulas, directly on Sector 7-G\'s discord and indirectly via his 
     <a href="{igl_tool}">Knockback Visualizer tool</a></p>
     '})
     
