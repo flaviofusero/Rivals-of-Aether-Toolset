@@ -10,7 +10,6 @@ library(glue)
 library(Rcpp)
 library(htmlwidgets)
 library(DT)
-library(shiny.semantic)
 
 chars <-  c('Absa', 'Clairen', 'Etalus', 'Elliana', 'Forsburn', 'Kragg', 'Maypul', 'Orcane', 'Ori', 'Ranno',
             'Shovel Knight', 'Sylvanos', 'Wrastor', 'Zetterburn')

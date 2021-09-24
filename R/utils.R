@@ -10,7 +10,6 @@ library(glue)
 library(Rcpp)
 library(htmlwidgets)
 library(DT)
-library(shiny.semantic)
 
 nvl <- function(x, y) {
   if (isTRUE(is.na(x)) | isTRUE(is.null(x)) | isTRUE(length(x) == 0)) {

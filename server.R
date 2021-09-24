@@ -10,7 +10,6 @@ library(glue)
 library(Rcpp)
 library(htmlwidgets)
 library(DT)
-library(shiny.semantic)
 
 server = function(input, output, session) {
   

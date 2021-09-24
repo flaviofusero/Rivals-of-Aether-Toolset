@@ -10,7 +10,6 @@ library(glue)
 library(Rcpp)
 library(htmlwidgets)
 library(DT)
-library(shiny.semantic)
 
 header <- dashboardHeader(title = 'RoA Toolset', 
                           titleWidth = 350)
