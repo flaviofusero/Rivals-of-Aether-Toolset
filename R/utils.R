@@ -10,6 +10,7 @@ library(glue)
 library(Rcpp)
 library(htmlwidgets)
 library(DT)
+library(shiny.semantic)
 
 nvl <- function(x, y) {
   if (isTRUE(is.na(x)) | isTRUE(is.null(x)) | isTRUE(length(x) == 0)) {
@@ -17,14 +18,14 @@ nvl <- function(x, y) {
   } else { x }
 }
 
-parse_char_moves_data <- function(char, angle_flippers) {
+parse_char_moves_data <- function(char, framedata, angle_flippers) {
   
   col_order = c('Ground.Moves', 'Startup', 'Active.Frames', 'Endlag.(Hit)', 'Endlag.(Whiff)', 'FAF.(Whiff)', 'Damage',
                 'Angle', 'Base.Knockback', 'Knockback.Scaling', 'Angle.Flipper', 'AF.Description', 'Priority', 
                 'Hitstun.Modifier', 'Landing.Lag.(Hit)', 'Landing.Lag.(Whiff)', 'Cooldown', 'Base.Hitpause', 
                 'Hitpause.Scaling', 'Kills.Projectiles', 'Notes', 'Moves')
   
-  char_moves_data <- as.data.table(readWorkbook('input/Rivals of Aether Academy Frame Data - Updated for 2.0.7.0.xlsx',
+  char_moves_data <- as.data.table(readWorkbook(framedata,
                                                 sheet = char,
                                                 rows = 2:100))
   
@@ -92,15 +93,22 @@ normalize_angle <- function(move, is_grounded) {
   
   norm_angle <- if (between(non_norm_angle, 90, 270)) {
     (180 - non_norm_angle) %% 360 
-    } else {
-      non_norm_angle
-    }
+  } else {
+    non_norm_angle
+  }
   
   return(norm_angle)
 }
 
-
 short_arc_between <- function(angle_1, angle_2) {
   abs(angle_1 - angle_2 + 180 + 360) %% 360 - 180
 }
+
+# Constants --------------------
+
+for (c in chars) {
+  assign(c, suppressWarnings(parse_char_moves_data(c, framedata, angle_flippers)))
+}
+
+char_stats <- parse_char_stats(chars_victim = chars_victim)
 
