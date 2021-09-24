@@ -10,13 +10,22 @@ library(glue)
 library(Rcpp)
 library(htmlwidgets)
 library(DT)
-
-source('R/utils.R')
+library(shiny.semantic)
 
 chars <-  c('Absa', 'Clairen', 'Etalus', 'Elliana', 'Forsburn', 'Kragg', 'Maypul', 'Orcane', 'Ori', 'Ranno',
             'Shovel Knight', 'Sylvanos', 'Wrastor', 'Zetterburn')
 
 chars_victim <- c(chars, 'Etalus (armor)') %>% sort
+
+
+angle_flippers <- as.data.table(read.xlsx(
+  'input/Rivals of Aether Academy Frame Data - Updated for 2.0.7.0.xlsx', 
+  sheet = 'Angle Flippers',
+  rows = 1:12,
+  cols = 1:13))[,
+                Angle.Flipper := as.numeric(Angle.Flipper)]
+
+framedata <- loadWorkbook('input/Rivals of Aether Academy Frame Data - Updated for 2.0.7.0.xlsx')
 
 icons <- sapply(chars, function(x) {glue(
   "<img src='Icons/{x}.png' width=25px></img>"
@@ -35,20 +44,6 @@ icons_chars_victim <- as.data.table(cbind(icons_victims, chars_victim))[, paste0
 omni_moves <- c('Zetterburn_nspecial', 'Zetterburn_uspecial', 'Forsburn_dspecial', 'Forsburn_fspecial', 'Ori_nspecial')
 
 scaling_factor <- 1
-
-angle_flippers <- as.data.table(read.xlsx(
-  'input/Rivals of Aether Academy Frame Data - Updated for 2.0.7.0.xlsx', 
-  sheet = 'Angle Flippers',
-  rows = 1:12,
-  cols = 1:13))[,
-                Angle.Flipper := as.numeric(Angle.Flipper)]
-
-
-for (c in chars) {
-  assign(c, suppressWarnings(parse_char_moves_data(c, angle_flippers)))
-}
-
-char_stats <- parse_char_stats(chars_victim = chars_victim)
 
 snap_tol = 30
 

@@ -17,7 +17,6 @@ COPY Rivals_of_Aether_Toolset.Rproj ./Rivals_of_Aether_Toolset.Rproj
 COPY app.R ./app.R
 COPY server.R ./server.R
 COPY ui.R ./ui.R
-COPY run.R ./run.R
 COPY renv.lock ./renv.lock
 
 COPY renv /srv/shiny-server/renv/

@@ -12,4 +12,3 @@ library(htmlwidgets)
 library(DT)
 
 runApp()
-

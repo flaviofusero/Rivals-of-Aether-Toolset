@@ -10,17 +10,12 @@ library(glue)
 library(Rcpp)
 library(htmlwidgets)
 library(DT)
+library(shiny.semantic)
 
 server = function(input, output, session) {
   
-  source('js/click_anywhere.js')
   sourceCpp('cpp/utils.cpp')
-  source('R/utils.R')
-  source('R/make_stage_elements.R')
-  source('R/assist_di.R')
-  source('R/constants.R')
-  source('server.R')
-  source('ui.R')
+  source('js/click_anywhere.js')
   
   # Observes --------------------
   
