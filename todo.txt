@@ -1,5 +1,4 @@
 TODO (fast)
-- parsecharmovesdata takes significant amount of time. Read workbook only once?
 - Maybe put newlines after dots in characters' long notes
 - Add icons which tell you how stuff works
 - Numbers get sorted by text. I should split columns
