@@ -1,21 +1,21 @@
-library(shiny)
-library(shinydashboard)
-library(shinyWidgets)
-library(shinyjs)
-library(plotly)
-library(data.table)
-library(stringr)
-library(openxlsx)
-library(glue)
-library(Rcpp)
-library(htmlwidgets)
-library(DT)
+# Header --------------------
 
-header <- dashboardHeader(title = 'RoA Toolset', 
+header <- dashboardHeader(title = #'RoA Toolset', 
+                            shinyDashboardLogoDIY(
+                              boldText = "RoA",
+                              mainText = "toolset",
+                              badgeTextSize = 0,
+                              badgeText = NULL,
+                              badgeBackColor = NULL,
+                              badgeTextColor = NULL
+                            ),
                           titleWidth = 350)
+
+# Sidebar --------------------
 
 sidebar <- dashboardSidebar(
   width = 350,
+  minified = FALSE,
   
   useShinyjs(),
   
@@ -158,100 +158,151 @@ sidebar <- dashboardSidebar(
     column(12,
            style = 'margin-top: -15px;',
            hidden(numericInput('omni_angle',
-                        label = 'Override attack angle (0 <= x < 360)',
-                        value = 45,
-                        min = 0,
-                        max = 360,
-                        step = 1))
+                               label = 'Override attack angle (0 <= x < 360)',
+                               value = 45,
+                               min = 0,
+                               max = 360,
+                               step = 1))
     )
   )
 )
 
+# Body  --------------------
+
 body <- dashboardBody(
-  navbarPage( 
-    title = 'Rivals of Aether Toolset',
-    tabPanel('Knockback',
-             
-             # tags$head(tags$style(HTML('
-             #  .box-body {
-             #      padding-top: 0px;
-             #      margin-top: 0px;
-             #      padding-left: 0px;
-             #      margin-left: 0px;
-             #      padding-bottom: 0px;
-             #      margin-bottom: 0px;
-             #  }
-             #                           
-             #                           '))),
-             
-             fluidRow(
-               column(12,
-                      style='padding-left:0px;',
-                      selectizeInput('stage',
-                                     label = NULL,
-                                     choices = names(stages) %>% sort)
+  
+  tags$head(tags$style(HTML('.box{box-shadow: 0 5px 10px rgba(154,160,185,.05), 0 15px 40px rgba(166,173,201,.2)};'))),
+  
+  mainPanel(
+    width = 12,
+    tabsetPanel(
+      tabPanel('Knockback',
+               br(),
+               fluidRow(
+                 column(
+                   width = 9,
+                   style='margin-left: -14px;', #-28px;',
+                   align = 'left',
+                   box(
+                     width = 12,
+                     collapsible = TRUE,
+                     headerBorder = F,
+                     status = 'primary',
+                     style = 'margin-top:-32px;',
+                     align = 'center',
+                     fluidRow(
+                       column(3,
+                              align='left',
+                              selectizeInput('stage',
+                                             label = NULL,
+                                             choices = names(stages) %>% sort)
+                       ),
+                       column(8, 
+                              offset = 1,
+                              align = 'left',
+                              h4('Click anywhere on the chart to move the trajectory')
+                       )
+                     ),
+                     fluidRow(
+                       column(8,
+                              offset = 4,
+                              align = 'left',
+                              style = 'margin-top: -20px; padding-left: 35px',
+                              h5('DI and % can be input via mouse, keyboard or mouse wheel')
+                       )
+                     ),
+                     div(style = "margin-top:-11px"), # any more than this and the "y" above is cut off
+                     plotlyOutput(outputId = "plot" ,
+                                  width = '100%',
+                                  height = 600
+                     )
+                   ),
+                   box(width = 12,
+                       style = 'margin-top:-32px;',
+                       status = 'primary',
+                       headerBorder = F,
+                       DTOutput('move_data')
+                   )
+                 ),
+                 
+                 column(width = 3,
+                        # align = 'center',
+                        box(width = 12,
+                            style='padding-right:30px; padding-left:30px; margin-top:-32px;',
+                            status = 'primary',
+                            headerBorder = F,
+                            fluidRow(
+                              uiOutput(outputId = "image", style = 'text-align: center;')
+                            ),
+                            fluidRow(
+                              h3(htmlOutput('selected_hitbox_kills', style = 'text-align: center;')),
+                              br(),
+                              HTML('<h5><font color=#56B4E9>Stats (hover to see info tooltips):</font></h5>'),
+                              h4(textOutput('angle_text')),
+                              bsTooltip('angle_text', 
+                                        title = 'Knockback angle of the move relative to the x axis.<br><br>The Sakurai Angle is expressed as 361°. A move with this property will send opponents 40 if they are grounded and 45 otherwise.', 
+                                        placement = 'left'),
+                              
+                              h4(textOutput('velocity_text')),
+                              bsTooltip('velocity_text', 
+                                        title = 'Launch velocity is given by the knockback formula:<br><br>BKB + damage (post-hit) * KBS * 0.12 * Knockback Adjustment<br><br>Etalus ice armor decreases the result by 30%.',
+                                        placement = 'left'),
+                              
+                              h4(textOutput('hitstun_text')),
+                              bsTooltip('hitstun_text', 
+                                        title = 'Total hitstun frames are given by the hitstun formula:<br><br>Histun modifier * (BKB * 4 * ((Knockback Adjustment - 1) * 0.6 + 1) + damage (post-hit) * 0.12 * KBS * 4 * 0.65 * Knockback Adjustment)<br><br>Result is rounded down to the nearest integer.',
+                                        placement = 'left'),
+                              
+                              
+                              h4(textOutput('DI_in_text')),
+                              bsTooltip('DI_in_text', 
+                                        title = 'DI can alter the launch angle by up to 18°. Maximum effect is given when DI is perpendicular to launch angle.<br><br>RoA has a DI assist future: angles within 22° (incl.) from perpendicular still count as full DI in/out.',
+                                        placement = 'left'),
+                              
+                              h4(textOutput('DI_out_text')),
+                              bsTooltip('DI_out_text', 
+                                        title = 'DI can alter the launch angle by up to 18°. Maximum effect is given when DI is perpendicular to launch angle.<br><br>RoA has a DI assist future: angles within 22° (incl.) from perpendicular still count as full DI in/out.',
+                                        placement = 'left'),
+                              
+                              h4(textOutput('grounded_text')),
+                              bsTooltip('grounded_text', 
+                                        title = 'If the "Snap to ground" option is active, clicking slightly above the ground will autosnap the trajectory to the below platform. Also relevant for moves with Sakurai angle.',
+                                        placement = 'left'),
+                              
+                              h4(textOutput('armor')),
+                              bsTooltip('armor', 
+                                        title = 'No armor: breaks at (12 - BKB) / (KBS * 0.12 * 0.9)<br><br>Ice armor: breaks at (12 - 0.7 * BKB) / (KBS * 0.7 * 0.12 * 0.9)<br><br>Damage is post-hit and the final result is rounded to the nearest integer.',
+                                        placement = 'left'),
+                              
+                              div(style = 'padding-top: 5px;'),
+                              HTML('<h5><font color=#56B4E9>Notes:</font></h5>'),
+                              h5(htmlOutput('notes'))
+                            )
+                        )
+                 )
                )
-             ),
-             
-             fluidRow(
-               column(width = 9,
-                      style='margin-left: -28px;',
-                      align = 'left',
-                      box(width = 12,
-                          align = 'center',
-                          h4('Click anywhere on the chart to move the trajectory'),
-                          h5('DI and % can be input via mouse, keyboard or mouse wheel'),
-                          div(style = "margin-top:-10px"),
-                          plotlyOutput(outputId = "plot" ,
-                                       width = '100%',
-                                       height = 600
-                          )
-                      ),
-                      box(width = 12,
-                          DTOutput('move_data')
-                      )
-               ),
-               
-               column(width = 3,
-                      # align = 'center',
-                      box(width = 12,
-                          style='padding-right:30px; padding-left:30px;',
-                          fluidRow(
-                            uiOutput(outputId = "image", style = 'text-align: center;')
-                          ),
-                          fluidRow(
-                            h3(htmlOutput('selected_hitbox_kills', style = 'text-align: center;')),
-                            br(),
-                            h4(textOutput('angle_text')),
-                            h4(textOutput('velocity_text')),
-                            h4(textOutput('hitstun_text')),
-                            h4(textOutput('DI_in_text')),
-                            h4(textOutput('DI_out_text')),
-                            h4(textOutput('grounded_text')),
-                            h4(textOutput('armor')),
-                            h5(textOutput('notes'))
-                          )
-                      )
-               )
-             )
-    ),
-    
-    tabPanel('Character stats',
-             DTOutput('table')
-    ),
-    
-    tabPanel('About & Feedback',
-             fluidRow(htmlOutput('credits')),
-             fluidRow(column(6,
-                             offset = 3,
-                             align= 'center',
-                             br(),
-                             tags$iframe(src = 'https://forms.gle/6mRDH1QQyTEYwUxV7',
-                                         width = '100%',
-                                         height = 600,
-                                         frameborder = 0,
-                                         marginheight = 0)
-             ))
+      ),
+      
+      tabPanel('Character stats',
+               br(),
+               DTOutput('table')
+      ),
+      
+      tabPanel('About & Feedback',             
+               br(),
+               fluidRow(htmlOutput('credits'),
+                        style = 'margin-left: 0px;'),
+               fluidRow(column(6,
+                               offset = 3,
+                               align= 'center',
+                               br(),
+                               tags$iframe(src = 'https://forms.gle/6mRDH1QQyTEYwUxV7',
+                                           width = '100%',
+                                           height = 600,
+                                           frameborder = 0,
+                                           marginheight = 0)
+               ))
+      )
     )
   )
 )

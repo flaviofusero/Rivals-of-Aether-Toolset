@@ -1,20 +1,15 @@
-library(shiny)
-library(shinydashboard)
-library(shinyWidgets)
-library(shinyjs)
-library(plotly)
-library(data.table)
-library(stringr)
-library(openxlsx)
-library(glue)
-library(Rcpp)
-library(htmlwidgets)
-library(DT)
-
 nvl <- function(x, y) {
   if (isTRUE(is.na(x)) | isTRUE(is.null(x)) | isTRUE(length(x) == 0)) {
     y 
   } else { x }
+}
+
+clean_names <- function(dt) {
+  untidy_cols <- colnames(dt)
+  tidy_cols <- gsub('.', ' ', gsub('Ground.Moves', 'Move', untidy_cols, fixed = T), fixed = T)
+  setnames(dt, old = untidy_cols, new = tidy_cols)
+  
+  return(dt)
 }
 
 parse_char_moves_data <- function(char, framedata, angle_flippers) {
