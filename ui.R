@@ -275,7 +275,7 @@ body <- dashboardBody(
                                         placement = 'left'),
                               
                               div(style = 'padding-top: 5px;'),
-                              HTML('<h5><font color=#56B4E9>Notes:</font></h5>'),
+                              
                               h5(htmlOutput('notes'))
                             )
                         )
