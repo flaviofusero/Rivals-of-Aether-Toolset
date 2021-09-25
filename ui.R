@@ -102,10 +102,7 @@ sidebar <- dashboardSidebar(
     status = "primary"
   ),
   
-  div(style = "margin-top:-15px"),
-  
-  fluidRow(
-  ),
+  # div(style = "margin-top:-15px"),
   
   fluidRow( 
     align = 'center',
@@ -138,13 +135,12 @@ sidebar <- dashboardSidebar(
     )
   ),
   
-  div(style = "margin-top:-15px"),
-  div(style = "margin-top:-15px"),
+  div(style = "margin-top:-10px"),
   
   fluidRow(
     column(6,
            align = 'center',
-           style='padding-left:20px; padding-right: 0px; margin-top: -10px;',
+           style='padding-left:20px; padding-right: 0px;',
            knobInput('damage',
                      label = '% (pre-hit)',
                      value = 100,
@@ -157,7 +153,7 @@ sidebar <- dashboardSidebar(
     ),
     column(6,
            align = 'center',
-           style='padding-right:20px; padding-left: 0px; margin-top: -10px;',
+           style='padding-right:20px; padding-left: 0px;',
            knobInput('DI',
                      label = 'DI angle',
                      value = 40,
