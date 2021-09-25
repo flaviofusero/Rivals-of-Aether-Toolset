@@ -1,6 +1,7 @@
 TODO (fast)
 - Numbers get sorted by text. I should split columns
    TODO > put a "First Active Frame" column
+- Output when an angle is 361 (Sakurai angle)
 
 TODO (will take time)
 - Put advanced options in the right sidebar

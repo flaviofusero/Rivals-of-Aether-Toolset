@@ -411,9 +411,12 @@ server = function(input, output, session) {
       clean_names
     datatable(move_data, 
               plugins = 'ellipsis',
+              extensions = c('Scroller', 'FixedColumns'),
               options = list(dom = 't', 
                              paging = FALSE, 
-                             ordering = FALSE
+                             ordering = FALSE,
+                             scrollX = TRUE,
+                             fixedColumns = list(leftColumns = 2)
                              # columnDefs = list(
                              #   list(
                              #     targets = -1,
@@ -433,15 +436,15 @@ server = function(input, output, session) {
       clean_names
     
     datatable(dt,
-              caption = 'Hover over a cell to see its full content',
+              # caption = 'Hover over a cell to see its full content',
               filter = 'top',
-              extensions = c('Buttons', 'Scroller', 'FixedColumns'),
+              extensions = c('Scroller', 'FixedColumns'), # 'Buttons'),
               plugins = c('ellipsis', 'natural'),
               options = list(scrollY = 650,
                              scrollX = TRUE, #500,
                              deferRender = TRUE,
                              scroller = TRUE,
-                             buttons = list(list(extend = 'colvis', targets = 0, visible = FALSE)),
+                             # buttons = list(list(extend = 'colvis', targets = 0, visible = FALSE)),
                              dom = 'lBfrtip',
                              order = list(1, 'asc'),
                              fixedColumns = list(leftColumns = 2),
@@ -457,7 +460,8 @@ server = function(input, output, session) {
                                ),
                                list( # Does not work server side
                                  type = "natural",
-                                 targets = "_all")
+                                 targets = "_all"
+                                 )
                              )
               )
     )},
