@@ -27,6 +27,12 @@ sidebar <- dashboardSidebar(
                                 style = rep(("padding-left: 10px; color: black; background: lightgrey;"), length(chars)))
   ),
   
+  #   fluidRow(
+  #   img(id="Zetterburn_test",src="icons/Zetterburn.png",width="25px",style="cursor:pointer; margin-left: 25px;"),
+  #   img(id="Forsburn_test",src="icons/Forsburn.png",width="25px",style="cursor:pointer;"),
+  #   img(id="Clairen_test",src="icons/Clairen.png",width="25px",style="cursor:pointer;")
+  # ),
+  
   div(style = "margin-top:-15px"),
   
   sidebarMenu(
@@ -76,21 +82,27 @@ sidebar <- dashboardSidebar(
   
   div(style = "margin-top:-15px"),
   
-  fluidRow(
-    algin = 'center',
-    column(12,
-           selectInput('drift',
-                       label = 'Drift DI',
-                       choices = c(No = 0, 
-                                   In = -1,
-                                   Out = 1))
-    )
+  # fluidRow(
+  #   algin = 'center',
+  #   column(12,
+  #          selectInput('drift',
+  #                      label = 'Drift DI',
+  #                      choices = c(No = 0, 
+  #                                  In = -1,
+  #                                  Out = 1))
+  #   )
+  # ),
+  # 
+  # div(style = "margin-top:-15px"),
+  
+  radioGroupButtons(
+    inputId = "drift",
+    label = "Drift DI", 
+    choices = c("In" = -1, "None" = 0, "Out" = 1),
+    status = "primary"
   ),
   
-  div(style = "margin-top:-15px"),
-  
-  fluidRow(
-  ),
+  # div(style = "margin-top:-15px"),
   
   fluidRow( 
     align = 'center',
@@ -105,7 +117,7 @@ sidebar <- dashboardSidebar(
     ),
     
     column(4, align = 'center',
-           style = 'margin-right:-2px;',
+           style = 'margin-right:-2px; margin-left: 7px;',
            prettyCheckbox(
              inputId = "reverse_hit",
              label = "Reverse hit", 
@@ -114,7 +126,7 @@ sidebar <- dashboardSidebar(
     ),
     
     column(4, align = 'center',
-           style = 'padding-right:0px; margin-left:-2px;',
+           style = 'padding-right:0px; margin-left:-5px;',
            prettyCheckbox(
              inputId = "No_DI",
              label = "No DI",
@@ -123,13 +135,12 @@ sidebar <- dashboardSidebar(
     )
   ),
   
-  div(style = "margin-top:-15px"),
-  div(style = "margin-top:-15px"),
+  div(style = "margin-top:-10px"),
   
   fluidRow(
     column(6,
            align = 'center',
-           style='padding-left:20px; padding-right: 0px; margin-top: -10px;',
+           style='padding-left:20px; padding-right: 0px;',
            knobInput('damage',
                      label = '% (pre-hit)',
                      value = 100,
@@ -142,7 +153,7 @@ sidebar <- dashboardSidebar(
     ),
     column(6,
            align = 'center',
-           style='padding-right:20px; padding-left: 0px; margin-top: -10px;',
+           style='padding-right:20px; padding-left: 0px;',
            knobInput('DI',
                      label = 'DI angle',
                      value = 40,
@@ -275,7 +286,7 @@ body <- dashboardBody(
                                         placement = 'left'),
                               
                               div(style = 'padding-top: 5px;'),
-                              HTML('<h5><font color=#56B4E9>Notes:</font></h5>'),
+                              
                               h5(htmlOutput('notes'))
                             )
                         )

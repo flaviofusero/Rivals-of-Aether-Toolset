@@ -394,7 +394,10 @@ server = function(input, output, session) {
   
   output$notes <- renderUI({
     validate(need(!is.na(selected_hitbox()$Notes), ''))
-    gsub('. ', '.<br><br>', selected_hitbox()$Notes, fixed = TRUE) %>% HTML
+    paste0(
+      '<h5><font color=#56B4E9>Notes:</font></h5>',
+      gsub('. ', '.<br><br>', selected_hitbox()$Notes, fixed = TRUE)
+    ) %>% HTML
   })
   
   output$move_data <- renderDT({
