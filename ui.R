@@ -248,8 +248,7 @@ body <- dashboardBody(
                             fluidRow(
                               h3(htmlOutput('selected_hitbox_kills', style = 'text-align: center;')),
                               br(),
-                              HTML('<h5><font color=#56B4E9>Stats (hover to see info tooltips):</font></h5>'),
-                              h4(textOutput('angle_text')),
+                              htmlOutput('angle_text'),
                               bsTooltip('angle_text', 
                                         title = 'Knockback angle of the move relative to the x axis.<br><br>The Sakurai Angle is expressed as 361°. A move with this property will send opponents 40 if they are grounded and 45 otherwise.', 
                                         placement = 'left'),
@@ -296,23 +295,36 @@ body <- dashboardBody(
       
       tabPanel('Character stats',
                br(),
-               DTOutput('table')
+               box(width = 12,
+                   style='margin-top:-32px;',
+                   status = 'primary',
+                   headerBorder = F,
+                   p('Hover over a cell to see its full content'),
+                   DTOutput('table')
+               )
       ),
       
       tabPanel('About & Feedback',             
                br(),
-               fluidRow(htmlOutput('credits'),
-                        style = 'margin-left: 0px;'),
-               fluidRow(column(6,
-                               offset = 3,
-                               align= 'center',
-                               br(),
-                               tags$iframe(src = 'https://forms.gle/6mRDH1QQyTEYwUxV7',
-                                           width = '100%',
-                                           height = 600,
-                                           frameborder = 0,
-                                           marginheight = 0)
-               ))
+               box(
+                 width = 6,
+                 style='margin-top:-32px;',
+                 status = 'primary',
+                 headerBorder = F,
+                 fluidRow(htmlOutput('credits'),
+                          style = 'margin-left: 0px;')
+               ),
+               box(6,
+                   align= 'center',
+                   style='margin-top:-32px;',
+                   status = 'primary',
+                   headerBorder = F,
+                   tags$iframe(src = 'https://forms.gle/6mRDH1QQyTEYwUxV7',
+                               width = '100%',
+                               height = 600,
+                               frameborder = 0,
+                               marginheight = 0)
+               )
       )
     )
   )
