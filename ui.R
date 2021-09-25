@@ -27,6 +27,12 @@ sidebar <- dashboardSidebar(
                                 style = rep(("padding-left: 10px; color: black; background: lightgrey;"), length(chars)))
   ),
   
+  #   fluidRow(
+  #   img(id="Zetterburn_test",src="icons/Zetterburn.png",width="25px",style="cursor:pointer; margin-left: 25px;"),
+  #   img(id="Forsburn_test",src="icons/Forsburn.png",width="25px",style="cursor:pointer;"),
+  #   img(id="Clairen_test",src="icons/Clairen.png",width="25px",style="cursor:pointer;")
+  # ),
+  
   div(style = "margin-top:-15px"),
   
   sidebarMenu(
@@ -76,15 +82,24 @@ sidebar <- dashboardSidebar(
   
   div(style = "margin-top:-15px"),
   
-  fluidRow(
-    algin = 'center',
-    column(12,
-           selectInput('drift',
-                       label = 'Drift DI',
-                       choices = c(No = 0, 
-                                   In = -1,
-                                   Out = 1))
-    )
+  # fluidRow(
+  #   algin = 'center',
+  #   column(12,
+  #          selectInput('drift',
+  #                      label = 'Drift DI',
+  #                      choices = c(No = 0, 
+  #                                  In = -1,
+  #                                  Out = 1))
+  #   )
+  # ),
+  # 
+  # div(style = "margin-top:-15px"),
+  
+  radioGroupButtons(
+    inputId = "drift",
+    label = "Drift DI", 
+    choices = c("In" = -1, "None" = 0, "Out" = 1),
+    status = "primary"
   ),
   
   div(style = "margin-top:-15px"),
@@ -105,7 +120,7 @@ sidebar <- dashboardSidebar(
     ),
     
     column(4, align = 'center',
-           style = 'margin-right:-2px;',
+           style = 'margin-right:-2px; margin-left: 7px;',
            prettyCheckbox(
              inputId = "reverse_hit",
              label = "Reverse hit", 
@@ -114,7 +129,7 @@ sidebar <- dashboardSidebar(
     ),
     
     column(4, align = 'center',
-           style = 'padding-right:0px; margin-left:-2px;',
+           style = 'padding-right:0px; margin-left:-5px;',
            prettyCheckbox(
              inputId = "No_DI",
              label = "No DI",
