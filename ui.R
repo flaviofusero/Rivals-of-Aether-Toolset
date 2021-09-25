@@ -314,7 +314,7 @@ body <- dashboardBody(
                  fluidRow(htmlOutput('credits'),
                           style = 'margin-left: 0px;')
                ),
-               box(6,
+               box(width = 6,
                    align= 'center',
                    style='margin-top:-32px;',
                    status = 'primary',
