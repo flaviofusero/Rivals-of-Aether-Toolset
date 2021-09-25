@@ -1,16 +1,3 @@
-library(shiny)
-library(shinydashboard)
-library(shinyWidgets)
-library(shinyjs)
-library(plotly)
-library(data.table)
-library(stringr)
-library(openxlsx)
-library(glue)
-library(Rcpp)
-library(htmlwidgets)
-library(DT)
-
 server = function(input, output, session) {
   
   sourceCpp('cpp/utils.cpp')
@@ -29,7 +16,7 @@ server = function(input, output, session) {
       inputId = 'hitbox',
       choices = paste0(input$char,
                        '_',
-                       selectable_hitboxes()) %>% 
+                       selectable_hitboxes()) %>%
         setNames(get_move_data(paste0(input$char, '_', input$tabs))[order(-(Base.Knockback + 12 * Knockback.Scaling)), Ground.Moves])
     )
   })
@@ -405,9 +392,9 @@ server = function(input, output, session) {
     )
   })
   
-  output$notes <- renderText({
+  output$notes <- renderUI({
     validate(need(!is.na(selected_hitbox()$Notes), ''))
-    selected_hitbox()$Notes
+    gsub('. ', '.<br><br>', selected_hitbox()$Notes, fixed = TRUE) %>% HTML
   })
   
   output$move_data <- renderDT({
@@ -415,10 +402,8 @@ server = function(input, output, session) {
               'Landing.Lag.(Whiff)', 'Cooldown', 'Base.Knockback', 'Knockback.Scaling') #, 'Angle.Flipper', 'AF.Description')
     
     move_data <- char_moves()[Ground.Moves %in% selectable_hitboxes(), intersect(cols, colnames(char_moves())), with = F]
-    move_data <- move_data[, colSums(is.na(move_data)) < nrow(move_data), with = FALSE] # Returns only column with at least one non-NA value
-    untidy_cols <- colnames(move_data)
-    tidy_cols <- gsub('.', ' ', gsub('Ground.Moves', 'Move', untidy_cols,  fixed = T), fixed = T)
-    setnames(move_data, old = untidy_cols, new = tidy_cols)
+    move_data <- move_data[, colSums(is.na(move_data)) < nrow(move_data), with = FALSE] %>% # Returns only column with at least one non-NA value
+      clean_names
     datatable(move_data, 
               plugins = 'ellipsis',
               options = list(dom = 't', 
@@ -437,9 +422,13 @@ server = function(input, output, session) {
   
   # Characters stats -------------------
   
-  output$table <- renderDT(
-    datatable(get(input$char)[, -'Moves'],
-              caption = 'Hover over a cell to see its content',
+  output$table <- renderDT({
+    
+    dt <- get(input$char)[, -'Moves'] %>% 
+      clean_names
+    
+    datatable(dt,
+              caption = 'Hover over a cell to see its full content',
               filter = 'top',
               extensions = c('Buttons', 'Scroller', 'FixedColumns'),
               plugins = c('ellipsis', 'natural'),
@@ -454,7 +443,7 @@ server = function(input, output, session) {
                              # autoWidth = TRUE,
                              columnDefs = list(
                                list(
-                                 targets = 2:(ncol(get(input$char)[, -'Moves'])-1),
+                                 targets = 2:(ncol(dt)-1),
                                  render = JS("$.fn.dataTable.render.ellipsis( 17, false )")
                                ),
                                list(
@@ -466,7 +455,7 @@ server = function(input, output, session) {
                                  targets = "_all")
                              )
               )
-    ),
+    )},
     server = TRUE # Note that natural sorting does not work server side :( 
   )
   
@@ -478,15 +467,15 @@ server = function(input, output, session) {
     igl_tool <- 'https://jsfiddle.net/IGLima/5sh0pudr/show/'
     
     x <- glue({'
-    <p>Tool by Vincent46</p>
-    <p>Kill % may be +/- 1% off due to rounding</p>
+    <h5>Tool by Vincent46</h5>
+    <h5>Kill % may be +/- 1% off due to rounding</h5>
     <br>
-    <p>Input data taken from the following resources (not by me):</p>
-    <p><a href="{fd}">Rivals of Aether Academy Frame Data</a> - Data extracted manually in-game and from dev-mode files by SNC. Extra information provided by Menace13 and Youngblood. General Stats created by Kisuno. Collated Patch Notes created by SNC</p>
-    <p><a href="{fd}">Rivals of Aether General Stats</a> - Data extracted from devmode files and formatted by Kisuno. Info provided by Menace13, Youngblood and SNC</p>
-    <p>Note that I made some data prep to facilitate automatic parsing. All errors in the data are my responsibility.</p>
-    <p>Big thanks to IGL for answering my questions about knockback formulas, directly on Sector 7-G\'s discord and indirectly via his 
-    <a href="{igl_tool}">Knockback Visualizer tool</a></p>
+    <h5>Input data taken from the following resources (not by me):</h5>
+    <h5><a href="{fd}">Rivals of Aether Academy Frame Data</a> - Data extracted manually in-game and from dev-mode files by SNC. Extra information provided by Menace13 and Youngblood. General Stats created by Kisuno. Collated Patch Notes created by SNC</h5>
+    <h5><a href="{fd}">Rivals of Aether General Stats</a> - Data extracted from devmode files and formatted by Kisuno. Info provided by Menace13, Youngblood and SNC</h5>
+    <h5>Note that I made some data prep to facilitate automatic parsing. All errors in the data are my responsibility.</h5>
+    <h5>Big thanks to IGL for answering my questions about knockback formulas, directly on Sector 7-G\'s discord and indirectly via his 
+    <a href="{igl_tool}">Knockback Visualizer tool</a></h5>
     '})
     
     HTML(x)

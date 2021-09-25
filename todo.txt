@@ -1,17 +1,17 @@
 TODO (fast)
-- Maybe put newlines after dots in characters' long notes
-- Add icons which tell you how stuff works
 - Numbers get sorted by text. I should split columns
    TODO > put a "First Active Frame" column
+- Put char icons instead of select input
 
 TODO (will take time)
+- Put advanced options in the right sidebar
 - Tool to visualize all blastzones, like https://tournameta.com/stage-comparison
 
 NOT SURE HOW TO IMPLEMENT
-- Put image on stages instaed of only lines
+- Overlay image on stages instead of only rectangles
 - Spikes on stage
 - Naked elliana
 
 MAYBETOWN
-- Write snap_to function in c++ to make click events faster? (Not urgent - it's not the bottleneck on Heroku...)
-- Use Semantic UI 
+- Add overheat bar for Elli attacks?
+- Add dark mode?
