@@ -1,7 +1,6 @@
 TODO (fast)
 - Numbers get sorted by text. I should split columns
    TODO > put a "First Active Frame" column
-- Put char icons instead of select input
 
 TODO (will take time)
 - Put advanced options in the right sidebar
@@ -15,3 +14,4 @@ NOT SURE HOW TO IMPLEMENT
 MAYBETOWN
 - Add overheat bar for Elli attacks?
 - Add dark mode?
+- Put char icons instead of select input? (Need to figure out how and also would take more space...)

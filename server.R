@@ -325,10 +325,12 @@ server = function(input, output, session) {
     }
   })
   
-  output$angle_text <- renderText({
+  output$angle_text <- renderUI({
     validate(need(BKB() != 0, ''))
-    paste0('Launch angle: ', 
-           ifelse(input$reverse_hit, (180 - normalized_angle()) %% 360, normalized_angle()), "°")
+    paste0('<h5><font color=#56B4E9>Stats (hover to see info tooltip):</font></h5>',
+           '<h4>Launch angle: ', 
+           ifelse(input$reverse_hit, (180 - normalized_angle()) %% 360, normalized_angle()), "°</h4>") %>% 
+      HTML
   }) 
   
   output$velocity_text <- renderText({

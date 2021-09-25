@@ -248,8 +248,7 @@ body <- dashboardBody(
                             fluidRow(
                               h3(htmlOutput('selected_hitbox_kills', style = 'text-align: center;')),
                               br(),
-                              HTML('<h5><font color=#56B4E9>Stats (hover to see info tooltips):</font></h5>'),
-                              h4(textOutput('angle_text')),
+                              htmlOutput('angle_text'),
                               bsTooltip('angle_text', 
                                         title = 'Knockback angle of the move relative to the x axis.<br><br>The Sakurai Angle is expressed as 361°. A move with this property will send opponents 40 if they are grounded and 45 otherwise.', 
                                         placement = 'left'),
