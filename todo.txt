@@ -1,4 +1,8 @@
 TODO (fast)
+<<<<<<< Updated upstream
+=======
+- Add maxfall logic (relevant for spikes, etc.)
+>>>>>>> Stashed changes
 - Numbers get sorted by text. I should split columns
    TODO > put a "First Active Frame" column
 - Output when an angle is 361 (Sakurai angle)
@@ -10,7 +14,6 @@ TODO (will take time)
 NOT SURE HOW TO IMPLEMENT
 - Overlay image on stages instead of only rectangles
 - Spikes on stage
-- Naked elliana
 
 MAYBETOWN
 - Add overheat bar for Elli attacks?

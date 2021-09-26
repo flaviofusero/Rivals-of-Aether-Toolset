@@ -51,7 +51,7 @@ parse_char_moves_data <- function(char, framedata, angle_flippers) {
 parse_char_stats <- function(chars_victim = chars_victim) {
   char_stats <- as.data.table(readWorkbook('input/RoA General Stats.xlsx',
                                            sheet = 'All Stats',
-                                           rows = 3:(3+length(chars_victim))))
+                                           rows = 2:(3+length(chars_victim))))
   
   cols_to_num <- setdiff(colnames(char_stats), 'Character')
   char_stats[ , (cols_to_num) := lapply(.SD, function(x) {

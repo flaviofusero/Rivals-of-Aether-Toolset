@@ -135,7 +135,9 @@ server = function(input, output, session) {
               input$damage)
   
   t_max <- reactive({
-    nvl(selected_hitbox()$Hitstun.Modifier, 0) * 
+    armor_multiplier <- 1 - 0.3 * (tolower(input$char_victim) == 'etalus (armor)')
+    
+    armor_multiplier * nvl(selected_hitbox()$Hitstun.Modifier, 0) * 
       (BKB() * 4 * ((char_stats[Character == input$char_victim, Knockback.Adjustment] - 1) * 0.6 + 1) +
          (input$damage + hitbox_damage()) * 0.12 * KBS() * 4 * 0.65 * 
          char_stats[Character == input$char_victim, Knockback.Adjustment]) %>% 

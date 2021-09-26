@@ -17,8 +17,8 @@ library(dashboardthemes)
 chars <-  c('Absa', 'Clairen', 'Etalus', 'Elliana', 'Forsburn', 'Kragg', 'Maypul', 'Orcane', 'Ori', 'Ranno',
             'Shovel Knight', 'Sylvanos', 'Wrastor', 'Zetterburn')
 
-chars_victim <- c(chars, 'Etalus (armor)') %>% sort
-
+chars_victim <- c(chars, 'Elliana (snake)', 'Etalus (armor)', 'Shovel Knight (mail)') %>% sort
+# TODO: might need to confirm stats for Elliana (snake), Etalus (armor), SK (mail)
 
 angle_flippers <- as.data.table(read.xlsx(
   'input/Rivals of Aether Academy Frame Data - Updated for 2.0.7.0.xlsx', 

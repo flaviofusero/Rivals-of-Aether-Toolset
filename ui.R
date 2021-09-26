@@ -260,7 +260,7 @@ body <- dashboardBody(
                               
                               h4(textOutput('hitstun_text')),
                               bsTooltip('hitstun_text', 
-                                        title = 'Total hitstun frames are given by the hitstun formula:<br><br>Histun modifier * (BKB * 4 * ((Knockback Adjustment - 1) * 0.6 + 1) + damage (post-hit) * 0.12 * KBS * 4 * 0.65 * Knockback Adjustment)<br><br>Result is rounded down to the nearest integer.',
+                                        title = 'Total hitstun frames are given by the hitstun formula:<br><br>Histun modifier * (BKB * 4 * ((Knockback Adjustment - 1) * 0.6 + 1) + damage (post-hit) * 0.12 * KBS * 4 * 0.65 * Knockback Adjustment)<br><br>Etalus ice armor decreases the result by 30%. Result is rounded down to the nearest integer.',
                                         placement = 'left'),
                               
                               
