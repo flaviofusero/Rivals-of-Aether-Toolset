@@ -12,6 +12,7 @@ library(Rcpp)
 library(htmlwidgets)
 library(DT)
 library(shinyBS)
+library(dashboardthemes)
 
 sourceCpp('cpp/utils.cpp')
 source('js/click_anywhere.js')

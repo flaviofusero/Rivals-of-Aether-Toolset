@@ -51,6 +51,20 @@ draw_stage <- function(stage_elements, traj) {
            # autosize = F,
            margin = m,
            showlegend = FALSE
+           # images = list(  
+           #   list(  
+           #     source = "test.png",  
+           #     x = 0, 
+           #     sizex = 509, 
+           #     y = 509, 
+           #     sizey = 905, 
+           #     xref = "x", 
+           #     yref = "y", 
+           #     opacity = 1.0, 
+           #     layer = "below",
+           #     sizing = "stretch" 
+           #   )  
+           # )
     ) %>% 
     config(displayModeBar = FALSE) %>% 
     onRender(click_anywhere, data = "clickposition")
