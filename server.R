@@ -1,8 +1,5 @@
 server = function(input, output, session) {
   
-  sourceCpp('cpp/utils.cpp')
-  source('js/click_anywhere.js')
-  
   # Observes --------------------
   
   # Prevents Heroku's greying up after 55 seconds of inactivity

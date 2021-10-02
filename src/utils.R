@@ -97,12 +97,3 @@ normalize_angle <- function(move, is_grounded) {
 short_arc_between <- function(angle_1, angle_2) {
   abs(angle_1 - angle_2 + 180 + 360) %% 360 - 180
 }
-
-# Constants --------------------
-
-for (c in chars) {
-  assign(c, suppressWarnings(parse_char_moves_data(c, framedata, angle_flippers)))
-}
-
-char_stats <- parse_char_stats(chars_victim = chars_victim)
-

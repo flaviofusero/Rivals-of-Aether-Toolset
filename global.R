@@ -13,7 +13,16 @@ library(htmlwidgets)
 library(DT)
 library(shinyBS)
 
-chars <-  c('Absa', 'Clairen', 'Etalus', 'Elliana', 'Forsburn', 'Kragg', 'Maypul', 'Orcane', 'Ori', 'Ranno',
+sourceCpp('cpp/utils.cpp')
+source('js/click_anywhere.js')
+source('src/utils.R')
+source('src/assist_di.R')
+source('src/draw_stage.R')
+source('src/make_stage_elements.R')
+
+# Constants
+
+chars <- c('Absa', 'Clairen', 'Etalus', 'Elliana', 'Forsburn', 'Kragg', 'Maypul', 'Orcane', 'Ori', 'Ranno',
             'Shovel Knight', 'Sylvanos', 'Wrastor', 'Zetterburn')
 
 chars_victim <- c(chars, 'Elliana (snake)', 'Etalus (armor)', 'Shovel Knight (mail)') %>% sort
@@ -27,6 +36,12 @@ angle_flippers <- as.data.table(read.xlsx(
                 Angle.Flipper := as.numeric(Angle.Flipper)]
 
 framedata <- loadWorkbook('input/Rivals of Aether Academy Frame Data - Updated for 2.0.7.0.xlsx')
+
+for (c in chars) {
+  assign(c, suppressWarnings(parse_char_moves_data(c, framedata, angle_flippers)))
+}
+
+char_stats <- parse_char_stats(chars_victim = chars_victim)
 
 icons <- sapply(chars, function(x) {glue(
   "<img src='Icons/{x}.png' width=25px></img>"
@@ -99,7 +114,7 @@ max_bz_bottom = lapply(stages, '[[', 'bottom') %>% unlist %>%  max
 max_bz_top = lapply(stages, '[[', 'top') %>% unlist %>%  max
 max_bz_h = max_bz_bottom + max_bz_top
 max_bz_w = 2 * (lapply(stages, '[[', 'ground') %>% unlist + lapply(stages, '[[', 'side') %>% unlist) %>% max
-buffer_w = 100
+buffer_w = 50
 buffer_h = 50
 
 canvas_w = max_bz_w + buffer_w
@@ -107,7 +122,7 @@ canvas_h = max_bz_h + buffer_h
 center_w = 0 # canvas_w / 2
 center_h = 0 # max_bz_bottom + buffer_h / 2
 xrange = list(-canvas_w / 2, canvas_w / 2)
-yrange = list(-(max_bz_bottom + buffer_h / 2), max_bz_top + buffer_h)
+yrange = list(-(max_bz_bottom + buffer_h / 2), max_bz_top + buffer_h / 2)
 
 # Corresponding to default x, y for zet fair at default inputs
 # Used for the initial plot
