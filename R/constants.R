@@ -12,7 +12,6 @@ library(Rcpp)
 library(htmlwidgets)
 library(DT)
 library(shinyBS)
-library(dashboardthemes)
 
 chars <-  c('Absa', 'Clairen', 'Etalus', 'Elliana', 'Forsburn', 'Kragg', 'Maypul', 'Orcane', 'Ori', 'Ranno',
             'Shovel Knight', 'Sylvanos', 'Wrastor', 'Zetterburn')

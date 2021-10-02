@@ -49,7 +49,7 @@ draw_stage <- function(stage_elements, traj) {
                         showgrid = FALSE
            ),
            # autosize = F,
-           # margin = m,
+           margin = m,
            showlegend = FALSE
     ) %>% 
     config(displayModeBar = FALSE) %>% 

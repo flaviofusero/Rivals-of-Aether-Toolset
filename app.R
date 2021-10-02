@@ -12,6 +12,5 @@ library(Rcpp)
 library(htmlwidgets)
 library(DT)
 library(shinyBS)
-library(dashboardthemes)
 
 runApp()
