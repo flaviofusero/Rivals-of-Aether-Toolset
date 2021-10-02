@@ -1,21 +1,16 @@
 TODO (fast)
-<<<<<<< Updated upstream
-=======
 - Add maxfall logic (relevant for spikes, etc.)
->>>>>>> Stashed changes
 - Numbers get sorted by text. I should split columns
    TODO > put a "First Active Frame" column
-- Output when an angle is 361 (Sakurai angle)
+- Add "character stats" sheet
 
 TODO (will take time)
-- Put advanced options in the right sidebar
 - Tool to visualize all blastzones, like https://tournameta.com/stage-comparison
 
 NOT SURE HOW TO IMPLEMENT
-- Overlay image on stages instead of only rectangles
+- Put image on stages instaed of only lines
 - Spikes on stage
 
 MAYBETOWN
-- Add overheat bar for Elli attacks?
-- Add dark mode?
-- Put char icons instead of select input? (Need to figure out how and also would take more space...)
+- Write snap_to function in c++ to make click events faster? (Not urgent - it's not the bottleneck on Heroku...)
+- Use Semantic UI 
