@@ -51,19 +51,19 @@ draw_stage <- function(stage_elements, traj) {
            # autosize = F,
            margin = m,
            showlegend = FALSE
-           # images = list(  
-           #   list(  
-           #     source = "test.png",  
-           #     x = 0, 
-           #     sizex = 509, 
-           #     y = 509, 
-           #     sizey = 905, 
-           #     xref = "x", 
-           #     yref = "y", 
-           #     opacity = 1.0, 
+           # images = list(
+           #   list(
+           #     source = "test.png",
+           #     x = 0,
+           #     y = -1920 / 2,
+           #     sizex = 1920,
+           #     sizey = 1080,
+           #     xref = "x",
+           #     yref = "y",
+           #     opacity = 1.0,
            #     layer = "below",
-           #     sizing = "stretch" 
-           #   )  
+           #     sizing = "stretch"
+           #   )
            # )
     ) %>% 
     config(displayModeBar = FALSE) %>% 
