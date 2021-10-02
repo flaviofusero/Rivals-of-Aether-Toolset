@@ -14,13 +14,14 @@ RUN apt-get update && \
 
 # copy the app to the image
 COPY Rivals_of_Aether_Toolset.Rproj ./Rivals_of_Aether_Toolset.Rproj
+COPY global.R ./global.R
 COPY app.R ./app.R
 COPY server.R ./server.R
 COPY ui.R ./ui.R
 COPY renv.lock ./renv.lock
 
 COPY renv /srv/shiny-server/renv/
-COPY R ./R/
+COPY src ./src/
 COPY input ./input/
 COPY www ./www/
 COPY cpp ./cpp/
@@ -35,11 +36,11 @@ RUN rm -rf /var/lib/apt/lists/*
 
 # make all app files readable, gives rwe permisssion (solves issue when dev in Windows, but building in Ubuntu)
 #RUN chmod -R 755 ./Rivals_of_Aether_Toolset.Rproj/
+#RUN chmod -R 755 ./global.R
 #RUN chmod -R 755 ./app.R
 #RUN chmod -R 755 ./server.R
 #RUN chmod -R 755 ./ui.R 
-#RUN chmod -R 755 ./run.R
-#RUN chmod -R 755 ./R/
+#RUN chmod -R 755 ./src/
 #RUN chmod -R 755 ./www/
 #RUN chmod -R 755 ./cpp/
 #RUN chmod -R 755 ./js/
