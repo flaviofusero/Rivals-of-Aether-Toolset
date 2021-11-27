@@ -1,6 +1,6 @@
 # Rivals-of-Aether-Toolset
 
-[Live on Heroku](https://roa-toolset.herokuapp.com)
+### [Live on Heroku](https://roa-toolset.herokuapp.com)
 
 Unofficial app designed for the platform fighter [Rivals of Aether](https://rivalsofaether.com/).
 
