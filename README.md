@@ -2,7 +2,7 @@
 
 ### [Live on Heroku](https://roa-toolset.herokuapp.com)
 
-Unofficial app designed for the platform fighter [Rivals of Aether](https://rivalsofaether.com/).
+Unofficial Shiny app designed for the platform fighter [Rivals of Aether](https://rivalsofaether.com/).
 
 ## Knockback
 Visualize the trajectory of your favourite moves interactively.
